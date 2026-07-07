@@ -102,6 +102,14 @@ async function _tentFetchPOIs(id) {
                 ).join('');
             sel.disabled = false;
         }
+        // Re-resolve the previous selection against the fresh POI list: redraw
+        // with the new radius if still present, otherwise drop the stale polygon.
+        if (q.selectedPOI) {
+            q.selectedPOI = q.fetchedPOIs.find(p => p.id === q.selectedPOI.id) ?? null;
+            if (q.selectedPOI) _tentDraw(id);
+            else _tentClearLayers(q);
+        }
+
         setStatus(tf('tent_status_found', q.fetchedPOIs.length, t(TENT_TYPES[q.poiType].label)), 'ok');
         updatePermalink();
     } catch (err) {

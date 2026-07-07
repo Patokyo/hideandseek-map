@@ -191,8 +191,13 @@ function ncFindNearest(point, elements) {
     return best ? { el: best, dist: bestDist } : null;
 }
 
-// Fetch elements for a single point, for all keys not yet in layerDataCache.
+// Fetch elements around a single point for the given keys.
 // Returns a map  key → element-array.
+//
+// Always queries around the point itself instead of reusing layerDataCache:
+// the cache is limited to the city bounding box, so it can miss POIs that are
+// closer to a point near or outside the city edge — which would silently give
+// a wrong "nearest" answer.
 async function ncFetchForPoint(point, keysToFetch) {
     if (keysToFetch.length === 0) return {};
 
@@ -205,6 +210,7 @@ async function ncFetchForPoint(point, keysToFetch) {
         for (const f of def.filters) {
             lines.push(`node(${around})${f};`);
             lines.push(`way(${around})${f};`);
+            lines.push(`relation(${around})${f};`);
         }
     }
     if (lines.length === 0) return {};
@@ -216,28 +222,6 @@ async function ncFetchForPoint(point, keysToFetch) {
     for (const key of keysToFetch) {
         const def = NC_LAYER_FILTERS[key];
         result[key] = def ? allElems.filter(def.match) : [];
-    }
-    return result;
-}
-
-// For each active key, return elements from cache (preferred) or a fresh query.
-//
-// Cache logic:
-//   layerDataCache[k] EXISTS (even with 0 elements) → layer was loaded for this city;
-//     use the cached elements (may be empty if the city has none of that POI type).
-//   layerDataCache[k] MISSING → layer never loaded / failed; fire a point-centred query.
-//
-// This prevents unnecessary Overpass queries for city-loaded layers and avoids
-// re-querying when the city genuinely has no POIs of a given type.
-async function ncGetElements(point, activeKeys) {
-    const cached  = activeKeys.filter(k => k in layerDataCache);
-    const toFetch = activeKeys.filter(k => !(k in layerDataCache));
-    const fetched = await ncFetchForPoint(point, toFetch);
-    const result  = {};
-    for (const key of activeKeys) {
-        result[key] = cached.includes(key)
-            ? (layerDataCache[key]?.elements ?? [])
-            : (fetched[key] ?? []);
     }
     return result;
 }
@@ -275,9 +259,8 @@ async function runNearestCheck() {
 
     try {
         // Fetch sequentially to avoid Overpass rate-limiting with simultaneous requests.
-        // Cached layers (already loaded via the layer panel) are returned instantly.
-        const elemsByKeyA = await ncGetElements(ptA, activeKeys);
-        const elemsByKeyB = await ncGetElements(ptB, activeKeys);
+        const elemsByKeyA = await ncFetchForPoint(ptA, activeKeys);
+        const elemsByKeyB = await ncFetchForPoint(ptB, activeKeys);
 
         let nMatch = 0, nMiss = 0;
         const rows = [];

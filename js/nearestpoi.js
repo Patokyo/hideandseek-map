@@ -77,6 +77,10 @@ async function fetchNearestPOIs(point) {
   way(${a})["tourism"~"^(museum|zoo|aquarium)$"];
   way(${a})["leisure"~"^(amusement_park|golf_course)$"];
   way(${a})["aeroway"="aerodrome"]["iata"];
+  relation(${a})["amenity"~"^(hospital|cinema|library)$"];
+  relation(${a})["tourism"~"^(museum|zoo|aquarium)$"];
+  relation(${a})["leisure"~"^(amusement_park|golf_course)$"];
+  relation(${a})["aeroway"="aerodrome"]["iata"];
 );
 out center tags;`;
 
@@ -85,10 +89,9 @@ out center tags;`;
         const elements = data.elements ?? [];
 
         const rows = NP_TYPES.map(({ key, icon, label, match }) => {
-            // Prefer already-loaded layer cache; fall back to freshly fetched elements
-            const pool = layerDataCache[key]?.elements?.length
-                ? layerDataCache[key].elements
-                : elements.filter(el => match(el.tags ?? {}));
+            // Use only the point-centred query result: the layer cache is limited
+            // to the city bounding box and can miss closer POIs outside it.
+            const pool = elements.filter(el => match(el.tags ?? {}));
 
             let best = null, bestDist = Infinity;
             for (const el of pool) {
