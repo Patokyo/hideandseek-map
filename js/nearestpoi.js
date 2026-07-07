@@ -23,6 +23,7 @@ function toggleNearestPOI() {
         document.getElementById('npBtn').textContent = t('btn_np_stop');
         document.getElementById('npBtn').classList.add('meas-active');
         setStatus(t('status_np_click'), 'loading');
+        closeSidebarForPick();
     } else {
         clearNearestPOI();
     }

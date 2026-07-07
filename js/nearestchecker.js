@@ -129,6 +129,7 @@ function ncStartPick(which) {
     ncPicking = which;
     document.getElementById('ncPick' + which).classList.add('meas-active');
     setStatus(t('status_nc_' + which.toLowerCase()), 'loading');
+    closeSidebarForPick();
 }
 
 function ncHandleClick(e) {

@@ -132,6 +132,7 @@ function toggleAdminCheck() {
     document.getElementById('adminBtn').textContent = t('btn_admin_stop');
     document.getElementById('adminBtn').classList.add('meas-active');
     setStatus(t('status_admin_a'), 'loading');
+    closeSidebarForPick();
 }
 
 function clearAdminCheck() {

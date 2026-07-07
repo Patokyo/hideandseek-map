@@ -296,6 +296,7 @@ function tentStartPick(id) {
     _tentPickingId = id;
     document.getElementById(`tent-pick-btn-${id}`)?.classList.add('meas-active');
     setStatus(t('tent_status_pick'), 'loading');
+    closeSidebarForPick();
 }
 
 function tentSelectPOI(id, val) {

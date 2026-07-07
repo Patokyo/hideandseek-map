@@ -600,6 +600,7 @@ button.meas-active:hover { background: #3b82f6; }
 
     #sidebar,
     #menuToggle,
+    #statusToast,
     #sidebarBackdrop,
     #errorOverlay,
     #printFab,
@@ -631,6 +632,10 @@ button.meas-active:hover { background: #3b82f6; }
 
 /* ── Mobile drawer ────────────────────────────────── */
 #menuToggle {
+    display: none;
+}
+
+#statusToast {
     display: none;
 }
 
@@ -707,6 +712,33 @@ button.meas-active:hover { background: #3b82f6; }
     .s-header-close {
         display: flex !important;
     }
+
+    /* Push the Leaflet zoom control below the menu button (12px top + 42px height) */
+    .leaflet-left .leaflet-control-zoom {
+        margin-top: 64px;
+    }
+
+    /* Mobile status toast: mirrors #status next to the menu button */
+    #statusToast.show {
+        display: flex;
+        align-items: center;
+        position: fixed;
+        top: 12px;
+        left: 62px;
+        right: 12px;
+        min-height: 42px;
+        z-index: 1500;
+        padding: 6px 12px;
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 10px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+        font-size: 12px;
+        color: #8b949e;
+    }
+    #statusToast.loading { color: #f0883e; }
+    #statusToast.error   { color: #f85149; }
+    #statusToast.ok      { color: #3fb950; }
 }
 
 /* ── About footer ─────────────────────────────────── */

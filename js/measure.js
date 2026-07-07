@@ -81,6 +81,7 @@ function toggleMeasure() {
         document.getElementById('measBtn').textContent    = t('btn_measure_stop');
         document.getElementById('measBtn').classList.add('meas-active');
         setStatus(t('status_point_a'), 'loading');
+        closeSidebarForPick();
     }
 }
 

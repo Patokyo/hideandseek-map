@@ -2,11 +2,17 @@
 
 // ── General helpers ───────────────────────────────────────────────────────────
 
-// Update the status bar at the bottom of the sidebar
+// Update the status bar at the bottom of the sidebar.
+// The message is mirrored into #statusToast, which is only visible on small
+// screens where the sidebar (and its status bar) is hidden behind the drawer.
 function setStatus(msg, type = '') {
     const el    = document.getElementById('status');
     el.textContent = msg;
     el.className   = type;
+
+    const toast = document.getElementById('statusToast');
+    toast.textContent = msg;
+    toast.className   = msg ? `show ${type}` : '';
 }
 
 // Escape HTML special characters (for popup content)
@@ -97,6 +103,12 @@ function closeSidebar() {
     document.getElementById('sidebar').classList.remove('open');
     document.getElementById('sidebarBackdrop').classList.remove('open');
     document.getElementById('menuToggle').style.display = '';
+}
+
+// Close the drawer on small screens so the map is reachable for a pick action.
+// No-op on desktop, where the sidebar and map are visible side by side.
+function closeSidebarForPick() {
+    if (window.matchMedia('(max-width: 700px)').matches) closeSidebar();
 }
 
 // ── Error popup ───────────────────────────────────────────────────────────────
