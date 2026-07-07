@@ -165,4 +165,5 @@ const LANG_EN = {
   tent_status_loading: "Loading {0}…",
   tent_status_found: "{0} {1} found",
   tent_status_pick: "Click on the map to set the tentacle center point",
+  tent_card_title: "Tentacles {0}",
 };

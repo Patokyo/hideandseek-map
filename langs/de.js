@@ -163,4 +163,5 @@ const LANG_DE = {
     tent_status_loading:  '{0} werden geladen…',
     tent_status_found:    '{0} {1} gefunden',
     tent_status_pick:     'Auf die Karte klicken um den Mittelpunkt zu setzen',
+    tent_card_title:      'Tentakel {0}',
 };

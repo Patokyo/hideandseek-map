@@ -375,7 +375,7 @@ function _tentRenderCards() {
         return `
 <div class="tent-card" id="tent-${q.id}">
   <div class="tent-card-hdr">
-    <span class="tent-card-title">Tentacles ${i + 1}</span>
+    <span class="tent-card-title">${tf('tent_card_title', i + 1)}</span>
     <button class="ghost tent-card-del" onclick="removeTentacleQuestion(${q.id})" title="Remove">✕</button>
   </div>
   <div class="row" style="margin-bottom:6px">
