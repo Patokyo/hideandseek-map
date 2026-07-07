@@ -105,10 +105,12 @@ let PLZ_COLORS = COLOR_THEMES[colorMode].plz;
 let INTERVAL_COLORS = COLOR_THEMES[colorMode].interval;
 
 // ── Overpass API endpoints (fallback order) ───────────────────────────────────
+// Only global mirrors belong here: regional instances (e.g. overpass.osm.ch,
+// Switzerland only) answer HTTP 200 with 0 elements for other areas, which the
+// fallback logic cannot distinguish from a genuinely empty result.
 const OVERPASS_ENDPOINTS = [
     'https://overpass-api.de/api/interpreter',
-    'https://overpass.karte.io/api/interpreter',
-    'https://overpass.osm.ch/api/interpreter',
+    'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
 ];
 
 // ── Map styles (Leaflet tile-layer definitions) ───────────────────────────────
