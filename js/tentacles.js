@@ -1,26 +1,27 @@
 'use strict';
 
 // ── POI type definitions ──────────────────────────────────────────────────────
+// label: i18n-Schlüssel (geteilt mit den POI-Layern in layers.js)
 // relQ: relations werden separat abgefragt da `out center` für relations
 // Koordinaten liefert (wichtig für große Krankenhäuser, Museen etc. in OSM)
 const TENT_TYPES = {
-    museum:    { label: 'Museums',          icon: '🏛️',
+    museum:    { label: 'lyr_museum',        icon: '🏛️',
                  nodeQ: '"tourism"="museum"',                     wayQ: '"tourism"="museum"',         relQ: '"tourism"="museum"' },
-    station:   { label: 'Train Stations',   icon: '🚉',
+    station:   { label: 'lyr_stations',      icon: '🚉',
                  nodeQ: '"railway"~"^(station|halt|tram_stop)$"', wayQ: null,                         relQ: null },
-    hospital:  { label: 'Hospitals',        icon: '🏥',
+    hospital:  { label: 'lyr_hospitals',     icon: '🏥',
                  nodeQ: '"amenity"="hospital"',                   wayQ: '"amenity"="hospital"',       relQ: '"amenity"="hospital"' },
-    cinema:    { label: 'Cinema',           icon: '🎬',
+    cinema:    { label: 'lyr_cinema',        icon: '🎬',
                  nodeQ: '"amenity"="cinema"',                     wayQ: '"amenity"="cinema"',         relQ: '"amenity"="cinema"' },
-    library:   { label: 'Libraries',        icon: '📚',
+    library:   { label: 'lyr_library',       icon: '📚',
                  nodeQ: '"amenity"="library"',                    wayQ: '"amenity"="library"',        relQ: '"amenity"="library"' },
-    zoo:       { label: 'Zoos',             icon: '🦁',
+    zoo:       { label: 'lyr_zoo',           icon: '🦁',
                  nodeQ: '"tourism"="zoo"',                        wayQ: '"tourism"="zoo"',            relQ: '"tourism"="zoo"' },
-    aquarium:  { label: 'Aquariums',        icon: '🐠',
+    aquarium:  { label: 'lyr_aquarium',      icon: '🐠',
                  nodeQ: '"tourism"="aquarium"',                   wayQ: '"tourism"="aquarium"',       relQ: '"tourism"="aquarium"' },
-    amusement: { label: 'Amusement Parks',  icon: '🎡',
+    amusement: { label: 'lyr_amusementpark', icon: '🎡',
                  nodeQ: '"leisure"="amusement_park"',             wayQ: '"leisure"="amusement_park"', relQ: '"leisure"="amusement_park"' },
-    golf:      { label: 'Golf Courses',     icon: '⛳',
+    golf:      { label: 'lyr_golf',          icon: '⛳',
                  nodeQ: '"leisure"="golf_course"',                wayQ: '"leisure"="golf_course"',    relQ: '"leisure"="golf_course"' },
 };
 
@@ -75,7 +76,7 @@ async function _tentFetchPOIs(id) {
 
     const sel = document.getElementById(`tent-poi-select-${id}`);
     if (sel) { sel.innerHTML = `<option>${t('tent_loading')}</option>`; sel.disabled = true; }
-    setStatus(tf('tent_status_loading', TENT_TYPES[q.poiType].label), 'loading');
+    setStatus(tf('tent_status_loading', t(TENT_TYPES[q.poiType].label)), 'loading');
 
     try {
         const data = await overpassFetch(query);
@@ -101,7 +102,7 @@ async function _tentFetchPOIs(id) {
                 ).join('');
             sel.disabled = false;
         }
-        setStatus(tf('tent_status_found', q.fetchedPOIs.length, TENT_TYPES[q.poiType].label), 'ok');
+        setStatus(tf('tent_status_found', q.fetchedPOIs.length, t(TENT_TYPES[q.poiType].label)), 'ok');
         updatePermalink();
     } catch (err) {
         if (sel) { sel.innerHTML = `<option value="">${t('tent_error')}</option>`; sel.disabled = false; }
@@ -279,7 +280,7 @@ function tentSetType(id, type) {
     q.fetchedPOIs = [];
     _tentClearLayers(q);
     const sel = document.getElementById(`tent-poi-select-${id}`);
-    if (sel) sel.innerHTML = '<option value="">– Set center first –</option>';
+    if (sel) sel.innerHTML = `<option value="">${t('tent_select_poi')}</option>`;
     if (q.centerLat !== null) _tentFetchPOIs(id);
 }
 
@@ -348,7 +349,7 @@ function _tentRenderCards() {
     el.innerHTML = _tentQuestions.map((q, i) => {
         const typeOpts = Object.entries(TENT_TYPES)
             .map(([k, v]) =>
-                `<option value="${k}"${k === q.poiType ? ' selected' : ''}>${v.label}</option>`
+                `<option value="${k}"${k === q.poiType ? ' selected' : ''}>${t(v.label)}</option>`
             ).join('');
 
         const poiOpts = q.fetchedPOIs.length
