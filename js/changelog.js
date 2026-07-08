@@ -1,7 +1,7 @@
 const CHANGELOG = [
   {
     date: "2026-07-08",
-    text: "many small changes, better support for small devices",
+    text: "many small changes, better support for small devices. Clear all feature.",
   },
   {
     date: "2026-05-25",
