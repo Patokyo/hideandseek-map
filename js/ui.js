@@ -56,6 +56,25 @@ function initColorMode() {
     });
 }
 
+// ── Global reset: clear every tool, drawn layer and marker ────────────────────
+// Keeps preferences (language, units, map style, colour mode) and the city.
+function clearAll() {
+    clearMeasure();
+    clearAdminCheck();
+    clearNearestChecker();
+    clearNearestPOI();
+    clearAllTentacles();
+    clearAllBusRoutes();
+    clearAllRadii();
+    clearAllLayers();
+    clearAllBoundaryLayers();
+    if (clickMarker) { map.removeLayer(clickMarker); clickMarker = null; }
+    clickedPoint = null;
+    document.getElementById('clickCoords').textContent = t('coord_hint');
+    updatePermalink();
+    setStatus(t('status_all_cleared'), 'ok');
+}
+
 // ── Map style popover ─────────────────────────────────────────────────────────
 function toggleStylePopover() {
     document.getElementById('stylePopover').classList.toggle('open');

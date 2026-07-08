@@ -88,6 +88,8 @@ const LANG_DE = {
     btn_measure_start:    'Messen starten',
     btn_measure_stop:     'Abbrechen',
     btn_clear_meas:       'Messung löschen',
+    btn_clear_all:        'Alles zurücksetzen',
+    status_all_cleared:   'Alles zurückgesetzt',
     style_label:          'Kartenstil',
     style_osm:            'OSM Standard',
     style_light:          '☀️ Hell (Positron)',

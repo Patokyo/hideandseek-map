@@ -38,6 +38,18 @@ function toggleBoundaryPopover() {
 
 registerPopoverClickOutside('boundaryPopover', 'boundaryFab');
 
+// ── Remove all boundary layers from the popover (admin levels + PLZ button) ──
+// The PLZ layer itself lives in activeLayers and is removed by clearAllLayers();
+// here we only reset its button state.
+function clearAllBoundaryLayers() {
+    Object.keys(adminBoundaryMap).forEach(id => {
+        map.removeLayer(adminBoundaryMap[id]);
+        delete adminBoundaryMap[id];
+        document.getElementById('bnd-' + id)?.classList.remove('active');
+    });
+    document.getElementById('bnd-plz')?.classList.remove('active');
+}
+
 // ── Toggle a boundary layer on/off ───────────────────────────────────────────
 async function toggleBoundaryLayer(id) {
     const btn = document.getElementById('bnd-' + id);

@@ -266,6 +266,13 @@ function removeTentacleQuestion(id) {
     updatePermalink();
 }
 
+function clearAllTentacles() {
+    _tentQuestions.forEach(_tentClearLayers);
+    _tentQuestions.length = 0;
+    _tentRenderCards();
+    updatePermalink();
+}
+
 function tentSetRadius(id, val) {
     const q = _tentQuestions.find(x => x.id === id);
     if (!q) return;

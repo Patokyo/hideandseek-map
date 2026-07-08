@@ -89,6 +89,8 @@ const LANG_EN = {
   btn_measure_start: "Start measuring",
   btn_measure_stop: "Cancel",
   btn_clear_meas: "Clear measurement",
+  btn_clear_all: "Reset everything",
+  status_all_cleared: "Everything cleared",
   style_label: "Map style",
   style_osm: "OSM Standard",
   style_light: "☀️ Light (Positron)",
