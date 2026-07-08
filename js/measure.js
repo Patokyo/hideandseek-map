@@ -68,6 +68,34 @@ function buildSemicircle(lat, lng, radiusKm, startBearing, steps = 72) {
     return pts;
 }
 
+// ── Perpendicular-bisector great circle ──────────────────────────────────────
+// The true boundary between "closer to A" and "closer to B" is the
+// perpendicular bisector of AB — on the sphere a great circle that runs once
+// around the Earth. Sample points quadratically packed towards the midpoint so
+// the line stays accurate at street zoom without thousands of segments.
+function buildBisector(lat, lng, bearingDeg, halfSteps = 120) {
+    const halfC = Math.PI * 6371;   // half Earth circumference in km
+    const pts   = [];
+    for (let i = halfSteps; i >= 1; i--) {
+        pts.push(destPoint(lat, lng, bearingDeg + 180, halfC * (i / halfSteps) ** 2));
+    }
+    pts.push([lat, lng]);
+    for (let i = 1; i <= halfSteps; i++) {
+        pts.push(destPoint(lat, lng, bearingDeg, halfC * (i / halfSteps) ** 2));
+    }
+    // Unwrap longitudes across the antimeridian so Leaflet draws one
+    // continuous line instead of jumping across the whole map.
+    let prev = null;
+    for (const p of pts) {
+        if (prev !== null) {
+            while (p[1] - prev >  180) p[1] -= 360;
+            while (p[1] - prev < -180) p[1] += 360;
+        }
+        prev = p[1];
+    }
+    return pts;
+}
+
 // ── Start / cancel measurement ────────────────────────────────────────────────
 function toggleMeasure() {
     if (measMode !== null) {
@@ -103,7 +131,7 @@ function clearMeasLayers() {
 // ── Recompute all derived layers after A or B was dragged ─────────────────────
 function redrawMeasComputed() {
     if (!measComputedLayers || !measA || !measB) return;
-    const { line, lineLabel, semi1, semi2, zone1Label, zone2Label } = measComputedLayers;
+    const { line, lineLabel, semi1, semi2, bisector, zone1Label, zone2Label } = measComputedLayers;
     const km           = haversineKm(measA, measB);
     const { deg, dir } = calcBearing(measA, measB);
     const midLat       = (measA.lat + measB.lat) / 2;
@@ -121,6 +149,7 @@ function redrawMeasComputed() {
     }));
     semi1.setLatLngs(buildSemicircle(midLat, midLng, radius, deg + 90));
     semi2.setLatLngs(buildSemicircle(midLat, midLng, radius, deg + 270));
+    bisector.setLatLngs(buildBisector(midLat, midLng, deg + 90));
     zone1Label.setLatLng(destPoint(midLat, midLng, deg + 180, labelOffset));
     zone2Label.setLatLng(destPoint(midLat, midLng, deg, labelOffset));
     document.getElementById('measResult').innerHTML =
@@ -185,6 +214,12 @@ map.on('click', (e) => {
         // the arc peak sits at startBearing+90. Therefore:
         //   semi1 peak = (deg+90)+90  = deg+180  → points toward A  ✓
         //   semi2 peak = (deg+270)+90 = deg+360  → points toward B  ✓
+        // The zone boundary (perpendicular bisector of AB) continues past the
+        // semicircles: as a great circle it runs once around the entire Earth.
+        const bisector = L.polyline(buildBisector(midLat, midLng, deg + 90), {
+            color: '#8b5cf6', weight: 2, dashArray: '2 6', interactive: false,
+        }).addTo(map);
+
         const semi1 = L.polygon(
             buildSemicircle(midLat, midLng, radius, deg + 90),
             { color: '#f97316', weight: 2, fillColor: '#f97316', fillOpacity: 0.22, interactive: false }
@@ -216,8 +251,8 @@ map.on('click', (e) => {
             interactive: false,
         }).addTo(map);
 
-        measComputedLayers = { line, lineLabel, semi1, semi2, zone1Label, zone2Label };
-        measLayers.push(mB, line, lineLabel, semi1, semi2, zone1Label, zone2Label);
+        measComputedLayers = { line, lineLabel, semi1, semi2, bisector, zone1Label, zone2Label };
+        measLayers.push(mB, line, lineLabel, semi1, semi2, bisector, zone1Label, zone2Label);
         document.getElementById('measResult').innerHTML =
             `<strong>${fmtDist(km)}</strong> &nbsp;·&nbsp; ${deg}° ${dir}`;
         document.getElementById('measBtn').textContent = t('btn_measure_start');
