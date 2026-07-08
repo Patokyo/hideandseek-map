@@ -25,10 +25,10 @@ async function nominatimBoundaryLayer(latlng, zoom, style) {
 const adminBoundaryMap = {};   // id → L.Layer | null
 
 const ADMIN_BOUNDARY_DEFS = {
-    admin1: { zoom: 14, color: '#facc15', fillOpacity: 0.20 },
-    admin2: { zoom: 10, color: '#f0883e', fillOpacity: 0.18 },
-    admin3: { zoom:  8, color: '#58a6ff', fillOpacity: 0.14 },
-    admin4: { zoom:  5, color: '#d2a8ff', fillOpacity: 0.10 },
+    admin1: { zoom: 14, color: '#a68500', fillOpacity: 0.20 },
+    admin2: { zoom: 10, color: '#e36206', fillOpacity: 0.18 },
+    admin3: { zoom:  8, color: '#2289ff', fillOpacity: 0.14 },
+    admin4: { zoom:  5, color: '#ae63ff', fillOpacity: 0.10 },
 };
 
 // ── Popover toggle ────────────────────────────────────────────────────────────

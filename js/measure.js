@@ -192,7 +192,7 @@ map.on('click', (e) => {
         const labelOffset  = radius * 0.42;
 
         const line = L.polyline([measA, measB], {
-            color: '#f0883e', weight: 2.5, dashArray: '7 5',
+            color: '#e36206', weight: 2.5, dashArray: '7 5',
         }).addTo(map);
 
         const lineLabel = L.marker([midLat, midLng], {
@@ -222,12 +222,12 @@ map.on('click', (e) => {
 
         const semi1 = L.polygon(
             buildSemicircle(midLat, midLng, radius, deg + 90),
-            { color: '#f97316', weight: 2, fillColor: '#f97316', fillOpacity: 0.22, interactive: false }
+            { color: '#e65e00', weight: 2, fillColor: '#e65e00', fillOpacity: 0.22, interactive: false }
         ).addTo(map);
 
         const semi2 = L.polygon(
             buildSemicircle(midLat, midLng, radius, deg + 270),
-            { color: '#38bdf8', weight: 2, fillColor: '#38bdf8', fillOpacity: 0.22, interactive: false }
+            { color: '#0091d2', weight: 2, fillColor: '#0091d2', fillOpacity: 0.22, interactive: false }
         ).addTo(map);
 
         // Zone labels: geometric centroid ≈ 0.42r in the direction of each arc peak

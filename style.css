@@ -384,8 +384,8 @@ button.meas-active:hover { background: #3b82f6; }
     box-shadow: 0 2px 8px rgba(0,0,0,0.65);
     pointer-events: none;
 }
-.zone-label-1 { background: #f97316; }
-.zone-label-2 { background: #38bdf8; color: #0d1117; }
+.zone-label-1 { background: #e65e00; }
+.zone-label-2 { background: #0091d2; }
 
 /* ── Admin Division Checker ──────────────────────── */
 .admin-row {

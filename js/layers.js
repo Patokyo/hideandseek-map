@@ -23,7 +23,7 @@ const LAYER_DEFS = {
 
     cityboundary: {
         label: 'lyr_cityboundary',
-        color: '#f0883e',
+        color: '#e36206',
         buildQuery: () => {
             // Prefer the exact OSM relation from Nominatim; fall back to name search.
             if (currentCity?.osm_type === 'relation' && currentCity?.osm_id) {
@@ -42,7 +42,7 @@ out geom;`;
 
     plz: {
         label: 'lyr_plz',
-        color: '#4ecdc4',
+        color: '#229890',
         buildQuery: (bb) => `[out:json][timeout:90];
 relation(${bbStr(bb)})["boundary"="postal_code"];
 out geom;`,
@@ -51,7 +51,7 @@ out geom;`,
 
     hospitals: {
         label: 'lyr_hospitals',
-        color: '#f85149',
+        color: '#ff4138',
         icon:  '🏥',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
@@ -65,7 +65,7 @@ out center bb tags;`,
 
     stations: {
         label: 'lyr_stations',
-        color: '#58a6ff',
+        color: '#2289ff',
         icon:  '🚉',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
@@ -78,7 +78,7 @@ out center bb tags;`,
 
     attractions: {
         label: 'lyr_attractions',
-        color: '#ffa657',
+        color: '#de6800',
         icon:  '⭐',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
@@ -93,7 +93,7 @@ out center bb tags;`,
 
     parks: {
         label: 'lyr_parks',
-        color: '#3fb950',
+        color: '#2c9e3c',
         icon:  '🌳',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
@@ -119,7 +119,7 @@ out center bb tags;`,
 
     shopping: {
         label: 'lyr_shopping',
-        color: '#d2a8ff',
+        color: '#ae63ff',
         icon:  '🛍️',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
@@ -132,7 +132,7 @@ out center bb tags;`,
 
     busstops: {
         label:      'lyr_busstops',
-        color:      '#facc15',
+        color:      '#a68500',
         icon:       '🚌',
         markerOpts: { radius: 5, color: '#000', weight: 1.5 },
         buildQuery: (bb) => `[out:json][timeout:60];
@@ -143,7 +143,7 @@ out;`,
 
     cinema: {
         label: 'lyr_cinema',
-        color: '#e879f9',
+        color: '#e32cff',
         icon:  '🎬',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
@@ -156,7 +156,7 @@ out center bb tags;`,
 
     zoo: {
         label: 'lyr_zoo',
-        color: '#a3e635',
+        color: '#63980b',
         icon:  '🦁',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
@@ -170,7 +170,7 @@ out center bb tags;`,
 
     townhall: {
         label: 'lyr_townhall',
-        color: '#fb923c',
+        color: '#e06500',
         icon:  '🏛️',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
@@ -193,7 +193,7 @@ out geom;`,
 
     water: {
         label: 'lyr_water',
-        color: '#38bdf8',
+        color: '#0091d2',
         buildQuery: (bb) => `[out:json][timeout:90];
 (
   way(${bbStr(bb)})["natural"="water"]["name"];
@@ -206,7 +206,7 @@ out geom;`,
 
     aquarium: {
         label: 'lyr_aquarium',
-        color: '#06b6d4',
+        color: '#0097b1',
         icon:  '🐠',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
@@ -220,7 +220,7 @@ out center bb tags;`,
 
     library: {
         label: 'lyr_library',
-        color: '#a78bfa',
+        color: '#936fff',
         icon:  '📚',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
@@ -233,7 +233,7 @@ out center bb tags;`,
 
     golf: {
         label: 'lyr_golf',
-        color: '#84cc16',
+        color: '#5f9708',
         icon:  '⛳',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
@@ -260,7 +260,7 @@ out center bb tags;`,
 
     embassy: {
         label: 'lyr_embassy',
-        color: '#f59e0b',
+        color: '#c07900',
         icon:  '🏛️',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
@@ -273,7 +273,7 @@ out center bb tags;`,
 
     consulate: {
         label: 'lyr_consulate',
-        color: '#d97706',
+        color: '#d06f00',
         icon:  '🏢',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
@@ -301,7 +301,7 @@ out center bb tags;`,
 
     swimmingpool: {
         label: 'lyr_swimmingpool',
-        color: '#22d3ee',
+        color: '#0497ad',
         icon:  '🏊',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
@@ -356,7 +356,7 @@ out center bb tags;`,
 
     fastfood: {
         label: 'lyr_fastfood',
-        color: '#fbbf24',
+        color: '#b18000',
         icon:  '🍔',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
@@ -383,7 +383,7 @@ out center bb tags;`,
 
     museum: {
         label: 'lyr_museum',
-        color: '#ca8a04',
+        color: '#ba7e00',
         icon:  '🏛️',
         buildQuery: (bb) => `[out:json][timeout:60];
 (

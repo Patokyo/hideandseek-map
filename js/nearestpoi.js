@@ -46,7 +46,7 @@ function npHandleClick(e) {
 
     if (npMarker) map.removeLayer(npMarker);
     npMarker = L.circleMarker([lat, lng], {
-        radius: 8, color: '#f0883e', fillColor: '#f0883e', fillOpacity: 0.9, weight: 2,
+        radius: 8, color: '#e36206', fillColor: '#e36206', fillOpacity: 0.9, weight: 2,
     }).addTo(map);
 
     fetchNearestPOIs({ lat, lng });

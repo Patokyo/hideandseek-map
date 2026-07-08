@@ -18,9 +18,9 @@ const ADMIN_LEVEL_FIELDS = [
 
 // Nominatim zoom level and style for each boundary (levels 2, 3, 4 — skip level 1 suburb)
 const BOUNDARY_STYLES = [
-    { zoom: 10, color: '#f0883e', fillOpacity: 0.07 },  // 2. city
-    { zoom:  8, color: '#58a6ff', fillOpacity: 0.05 },  // 3. county
-    { zoom:  5, color: '#d2a8ff', fillOpacity: 0.03 },  // 4. state
+    { zoom: 10, color: '#e36206', fillOpacity: 0.07 },  // 2. city
+    { zoom:  8, color: '#2289ff', fillOpacity: 0.05 },  // 3. county
+    { zoom:  5, color: '#ae63ff', fillOpacity: 0.03 },  // 4. state
 ];
 
 
@@ -171,7 +171,7 @@ function adminHandleClick(e) {
             .catch(err => setStatus(tf('status_err', err.message), 'error'));
 
         // Level-1 highlight (orange) + background boundaries for levels 2/3/4
-        fetchAndDrawHighlight(latlng, '#f97316').then(l => { adminHighlightA = l; });
+        fetchAndDrawHighlight(latlng, '#e65e00').then(l => { adminHighlightA = l; });
         fetchAndDrawBoundaries(latlng);
         return true;
     }
@@ -190,7 +190,7 @@ function adminHandleClick(e) {
             .catch(err => setStatus(tf('status_err', err.message), 'error'));
 
         // Level-1 highlight (blue) for point B
-        fetchAndDrawHighlight(latlng, '#38bdf8').then(l => { adminHighlightB = l; });
+        fetchAndDrawHighlight(latlng, '#0091d2').then(l => { adminHighlightB = l; });
         return true;
     }
 
