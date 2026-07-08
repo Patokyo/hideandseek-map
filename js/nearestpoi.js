@@ -2,16 +2,36 @@
 
 // POI types shown in the results table, in display order.
 const NP_TYPES = [
-    { key: 'hospitals',     icon: '🏥', label: 'lyr_hospitals',     match: t => t.amenity === 'hospital' },
-    { key: 'stations',      icon: '🚉', label: 'lyr_stations',      match: t => /^(station|halt|tram_stop)$/.test(t.railway) || t.amenity === 'bus_station' },
-    { key: 'cinema',        icon: '🎬', label: 'lyr_cinema',        match: t => t.amenity === 'cinema' },
-    { key: 'museum',        icon: '🏛️', label: 'lyr_museum',        match: t => t.tourism === 'museum' },
-    { key: 'zoo',           icon: '🦁', label: 'lyr_zoo',           match: t => t.tourism === 'zoo' },
-    { key: 'aquarium',      icon: '🐠', label: 'lyr_aquarium',      match: t => t.tourism === 'aquarium' },
-    { key: 'library',       icon: '📚', label: 'lyr_library',       match: t => t.amenity === 'library' },
-    { key: 'amusementpark', icon: '🎡', label: 'lyr_amusementpark', match: t => t.leisure === 'amusement_park' },
-    { key: 'golf',          icon: '⛳', label: 'lyr_golf',          match: t => t.leisure === 'golf_course' },
-    { key: 'airports',      icon: '✈️', label: 'lyr_airports',      match: t => t.aeroway === 'aerodrome' && !!t.iata },
+    {
+        key: 'hospitals',
+        icon: '🏥',
+        label: 'lyr_hospitals',
+        match: (t) => t.amenity === 'hospital',
+    },
+    {
+        key: 'stations',
+        icon: '🚉',
+        label: 'lyr_stations',
+        match: (t) => /^(station|halt|tram_stop)$/.test(t.railway) || t.amenity === 'bus_station',
+    },
+    { key: 'cinema', icon: '🎬', label: 'lyr_cinema', match: (t) => t.amenity === 'cinema' },
+    { key: 'museum', icon: '🏛️', label: 'lyr_museum', match: (t) => t.tourism === 'museum' },
+    { key: 'zoo', icon: '🦁', label: 'lyr_zoo', match: (t) => t.tourism === 'zoo' },
+    { key: 'aquarium', icon: '🐠', label: 'lyr_aquarium', match: (t) => t.tourism === 'aquarium' },
+    { key: 'library', icon: '📚', label: 'lyr_library', match: (t) => t.amenity === 'library' },
+    {
+        key: 'amusementpark',
+        icon: '🎡',
+        label: 'lyr_amusementpark',
+        match: (t) => t.leisure === 'amusement_park',
+    },
+    { key: 'golf', icon: '⛳', label: 'lyr_golf', match: (t) => t.leisure === 'golf_course' },
+    {
+        key: 'airports',
+        icon: '✈️',
+        label: 'lyr_airports',
+        match: (t) => t.aeroway === 'aerodrome' && !!t.iata,
+    },
 ];
 
 let npActive = false;
@@ -31,7 +51,10 @@ function toggleNearestPOI() {
 
 function clearNearestPOI() {
     npActive = false;
-    if (npMarker) { map.removeLayer(npMarker); npMarker = null; }
+    if (npMarker) {
+        map.removeLayer(npMarker);
+        npMarker = null;
+    }
     document.getElementById('npResult').innerHTML = '';
     document.getElementById('npBtn').textContent = t('btn_np_start');
     document.getElementById('npBtn').classList.remove('meas-active');
@@ -46,7 +69,11 @@ function npHandleClick(e) {
 
     if (npMarker) map.removeLayer(npMarker);
     npMarker = L.circleMarker([lat, lng], {
-        radius: 8, color: '#e36206', fillColor: '#e36206', fillOpacity: 0.9, weight: 2,
+        radius: 8,
+        color: '#e36206',
+        fillColor: '#e36206',
+        fillOpacity: 0.9,
+        weight: 2,
     }).addTo(map);
 
     fetchNearestPOIs({ lat, lng });
@@ -61,8 +88,7 @@ addMapClickHook(npHandleClick);
 
 async function fetchNearestPOIs(point) {
     const resultEl = document.getElementById('npResult');
-    resultEl.innerHTML =
-        `<div style="color:#8b949e;font-size:12px;padding:4px 0">${t('nc_loading')}</div>`;
+    resultEl.innerHTML = `<div style="color:#8b949e;font-size:12px;padding:4px 0">${t('nc_loading')}</div>`;
     setStatus(t('status_admin_loading'), 'loading');
 
     const r = 25000;
@@ -92,17 +118,22 @@ out center tags;`;
         const rows = NP_TYPES.map(({ key, icon, label, match }) => {
             // Use only the point-centred query result: the layer cache is limited
             // to the city bounding box and can miss closer POIs outside it.
-            const pool = elements.filter(el => match(el.tags ?? {}));
+            const pool = elements.filter((el) => match(el.tags ?? {}));
 
-            let best = null, bestDist = Infinity;
+            let best = null,
+                bestDist = Infinity;
             for (const el of pool) {
                 const c = getElementCenter(el);
                 if (!c) continue;
                 const d = haversineKm(point, c);
-                if (d < bestDist) { bestDist = d; best = el; }
+                if (d < bestDist) {
+                    bestDist = d;
+                    best = el;
+                }
             }
 
-            if (!best) return `
+            if (!best)
+                return `
                 <div class="np-row np-na">
                     <span class="np-icon">${icon}</span>
                     <span class="np-label">${t(label)}</span>
@@ -122,8 +153,7 @@ out center tags;`;
         resultEl.innerHTML = rows;
         setStatus(t('status_admin_done'), 'ok');
     } catch (err) {
-        resultEl.innerHTML =
-            `<div class="nc-result nc-miss">${t('status_err_popup')}</div>`;
+        resultEl.innerHTML = `<div class="nc-result nc-miss">${t('status_err_popup')}</div>`;
         showErrorPopup(err.message);
         setStatus(t('status_err_popup'), 'error');
     }

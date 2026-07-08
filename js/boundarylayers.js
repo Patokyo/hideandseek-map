@@ -6,29 +6,35 @@
 async function nominatimBoundaryLayer(latlng, zoom, style) {
     try {
         const res = await fetch(
-            'https://nominatim.openstreetmap.org/reverse?' + new URLSearchParams({
-                lat: latlng.lat, lon: latlng.lng,
-                format: 'json', polygon_geojson: 1, zoom,
-            })
+            'https://nominatim.openstreetmap.org/reverse?' +
+                new URLSearchParams({
+                    lat: latlng.lat,
+                    lon: latlng.lng,
+                    format: 'json',
+                    polygon_geojson: 1,
+                    zoom,
+                }),
         );
         if (!res.ok) return null;
         const data = await res.json();
         if (!data.geojson) return null;
         return {
             layer: L.geoJSON(data.geojson, { style, interactive: false }).addTo(map),
-            uid:   `${data.osm_type}${data.osm_id}`,
+            uid: `${data.osm_type}${data.osm_id}`,
         };
-    } catch (_) { return null; }
+    } catch (_) {
+        return null;
+    }
 }
 
 // ── Admin boundary layers (Nominatim polygon) ─────────────────────────────────
-const adminBoundaryMap = {};   // id → L.Layer | null
+const adminBoundaryMap = {}; // id → L.Layer | null
 
 const ADMIN_BOUNDARY_DEFS = {
-    admin1: { zoom: 14, color: '#a68500', fillOpacity: 0.20 },
+    admin1: { zoom: 14, color: '#a68500', fillOpacity: 0.2 },
     admin2: { zoom: 10, color: '#e36206', fillOpacity: 0.18 },
-    admin3: { zoom:  8, color: '#2289ff', fillOpacity: 0.14 },
-    admin4: { zoom:  5, color: '#ae63ff', fillOpacity: 0.10 },
+    admin3: { zoom: 8, color: '#2289ff', fillOpacity: 0.14 },
+    admin4: { zoom: 5, color: '#ae63ff', fillOpacity: 0.1 },
 };
 
 // ── Popover toggle ────────────────────────────────────────────────────────────
@@ -42,7 +48,7 @@ registerPopoverClickOutside('boundaryPopover', 'boundaryFab');
 // The PLZ layer itself lives in activeLayers and is removed by clearAllLayers();
 // here we only reset its button state.
 function clearAllBoundaryLayers() {
-    Object.keys(adminBoundaryMap).forEach(id => {
+    Object.keys(adminBoundaryMap).forEach((id) => {
         map.removeLayer(adminBoundaryMap[id]);
         delete adminBoundaryMap[id];
         document.getElementById('bnd-' + id)?.classList.remove('active');
@@ -85,12 +91,13 @@ async function toggleBoundaryLayer(id) {
 async function _loadAdminBoundaryLayer(id) {
     const def = ADMIN_BOUNDARY_DEFS[id];
     const ref = currentCity ?? map.getCenter();
-    const result = await nominatimBoundaryLayer(
-        { lat: ref.lat, lng: ref.lng },
-        def.zoom,
-        { color: def.color, weight: 2.5, opacity: 0.85,
-          fillColor: def.color, fillOpacity: def.fillOpacity }
-    );
+    const result = await nominatimBoundaryLayer({ lat: ref.lat, lng: ref.lng }, def.zoom, {
+        color: def.color,
+        weight: 2.5,
+        opacity: 0.85,
+        fillColor: def.color,
+        fillOpacity: def.fillOpacity,
+    });
     if (!result) throw new Error(t('err_no_geojson'));
     return result.layer;
 }
@@ -106,6 +113,8 @@ async function reloadActiveBoundaryLayers() {
         delete adminBoundaryMap[id];
         try {
             adminBoundaryMap[id] = await _loadAdminBoundaryLayer(id);
-        } catch (_) { /* skip silently */ }
+        } catch (_) {
+            /* skip silently */
+        }
     }
 }

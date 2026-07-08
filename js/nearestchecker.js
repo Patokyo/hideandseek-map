@@ -8,111 +8,117 @@
 // Layers whose POIs cannot meaningfully be "nearest" (coastline, water, plz …)
 // simply have no entry here and are silently skipped.
 const NC_LAYER_FILTERS = {
-    hospitals:     {
+    hospitals: {
         filters: ['["amenity"="hospital"]'],
-        match:   el => el.tags?.amenity === 'hospital',
+        match: (el) => el.tags?.amenity === 'hospital',
     },
-    stations:      {
+    stations: {
         filters: ['["railway"~"^(station|halt|tram_stop)$"]', '["amenity"="bus_station"]'],
-        match:   el => /^(station|halt|tram_stop)$/.test(el.tags?.railway) || el.tags?.amenity === 'bus_station',
+        match: (el) =>
+            /^(station|halt|tram_stop)$/.test(el.tags?.railway) ||
+            el.tags?.amenity === 'bus_station',
     },
-    cinema:        {
+    cinema: {
         filters: ['["amenity"="cinema"]'],
-        match:   el => el.tags?.amenity === 'cinema',
+        match: (el) => el.tags?.amenity === 'cinema',
     },
-    zoo:           {
+    zoo: {
         filters: ['["tourism"="zoo"]'],
-        match:   el => el.tags?.tourism === 'zoo',
+        match: (el) => el.tags?.tourism === 'zoo',
     },
-    aquarium:      {
+    aquarium: {
         filters: ['["tourism"="aquarium"]'],
-        match:   el => el.tags?.tourism === 'aquarium',
+        match: (el) => el.tags?.tourism === 'aquarium',
     },
-    golf:          {
+    golf: {
         filters: ['["leisure"="golf_course"]'],
-        match:   el => el.tags?.leisure === 'golf_course',
+        match: (el) => el.tags?.leisure === 'golf_course',
     },
-    museum:        {
+    museum: {
         filters: ['["tourism"="museum"]'],
-        match:   el => el.tags?.tourism === 'museum',
+        match: (el) => el.tags?.tourism === 'museum',
     },
     amusementpark: {
         filters: ['["leisure"="amusement_park"]'],
-        match:   el => el.tags?.leisure === 'amusement_park',
+        match: (el) => el.tags?.leisure === 'amusement_park',
     },
-    library:       {
+    library: {
         filters: ['["amenity"="library"]'],
-        match:   el => el.tags?.amenity === 'library',
+        match: (el) => el.tags?.amenity === 'library',
     },
-    airports:      {
+    airports: {
         filters: ['["aeroway"="aerodrome"]["iata"]'],
-        match:   el => el.tags?.aeroway === 'aerodrome' && !!el.tags?.iata,
+        match: (el) => el.tags?.aeroway === 'aerodrome' && !!el.tags?.iata,
     },
-    airfields:     {
+    airfields: {
         filters: ['["aeroway"="aerodrome"][!"iata"]["military"!="airfield"]'],
-        match:   el => el.tags?.aeroway === 'aerodrome' && !el.tags?.iata && el.tags?.military !== 'airfield',
+        match: (el) =>
+            el.tags?.aeroway === 'aerodrome' && !el.tags?.iata && el.tags?.military !== 'airfield',
     },
-    consulate:     {
+    consulate: {
         filters: ['["amenity"="consulate"]'],
-        match:   el => el.tags?.amenity === 'consulate',
+        match: (el) => el.tags?.amenity === 'consulate',
     },
-    embassy:       {
+    embassy: {
         filters: ['["amenity"="embassy"]'],
-        match:   el => el.tags?.amenity === 'embassy',
+        match: (el) => el.tags?.amenity === 'embassy',
     },
-    parks:         {
+    parks: {
         filters: ['["leisure"="park"]["name"]'],
-        match:   el => el.tags?.leisure === 'park' && !!el.tags?.name,
+        match: (el) => el.tags?.leisure === 'park' && !!el.tags?.name,
     },
-    stadium:       {
+    stadium: {
         filters: ['["leisure"="stadium"]'],
-        match:   el => el.tags?.leisure === 'stadium',
+        match: (el) => el.tags?.leisure === 'stadium',
     },
-    townhall:      {
+    townhall: {
         filters: ['["amenity"="townhall"]'],
-        match:   el => el.tags?.amenity === 'townhall',
+        match: (el) => el.tags?.amenity === 'townhall',
     },
-    swimmingpool:  {
+    swimmingpool: {
         filters: ['["leisure"="swimming_pool"]["name"]', '["amenity"="public_bath"]'],
-        match:   el => (el.tags?.leisure === 'swimming_pool' && !!el.tags?.name) || el.tags?.amenity === 'public_bath',
+        match: (el) =>
+            (el.tags?.leisure === 'swimming_pool' && !!el.tags?.name) ||
+            el.tags?.amenity === 'public_bath',
     },
-    police:        {
+    police: {
         filters: ['["amenity"="police"]'],
-        match:   el => el.tags?.amenity === 'police',
+        match: (el) => el.tags?.amenity === 'police',
     },
-    firestation:   {
+    firestation: {
         filters: ['["amenity"="fire_station"]'],
-        match:   el => el.tags?.amenity === 'fire_station',
+        match: (el) => el.tags?.amenity === 'fire_station',
     },
-    attractions:   {
+    attractions: {
         filters: [
             '["tourism"~"^(attraction|monument|artwork|viewpoint|gallery)$"]',
             '["historic"~"^(castle|monument|memorial|ruins)$"]',
         ],
-        match:   el => /^(attraction|monument|artwork|viewpoint|gallery)$/.test(el.tags?.tourism)
-                    || /^(castle|monument|memorial|ruins)$/.test(el.tags?.historic),
+        match: (el) =>
+            /^(attraction|monument|artwork|viewpoint|gallery)$/.test(el.tags?.tourism) ||
+            /^(castle|monument|memorial|ruins)$/.test(el.tags?.historic),
     },
-    shopping:      {
+    shopping: {
         filters: ['["shop"="mall"]'],
-        match:   el => el.tags?.shop === 'mall',
+        match: (el) => el.tags?.shop === 'mall',
     },
-    cemetery:      {
+    cemetery: {
         filters: ['["landuse"="cemetery"]', '["amenity"="grave_yard"]'],
-        match:   el => el.tags?.landuse === 'cemetery' || el.tags?.amenity === 'grave_yard',
+        match: (el) => el.tags?.landuse === 'cemetery' || el.tags?.amenity === 'grave_yard',
     },
-    fastfood:      {
+    fastfood: {
         filters: ['["amenity"="fast_food"]'],
-        match:   el => el.tags?.amenity === 'fast_food',
+        match: (el) => el.tags?.amenity === 'fast_food',
     },
-    busstops:      {
+    busstops: {
         filters: ['["highway"="bus_stop"]'],
-        match:   el => el.tags?.highway === 'bus_stop',
+        match: (el) => el.tags?.highway === 'bus_stop',
     },
 };
 
 // ── State ─────────────────────────────────────────────────────────────────────
-let ncPicking  = null;   // 'A' | 'B' | null
-let ncMarkers  = [];
+let ncPicking = null; // 'A' | 'B' | null
+let ncMarkers = [];
 
 // ── Map-click picking ─────────────────────────────────────────────────────────
 
@@ -139,8 +145,11 @@ function ncHandleClick(e) {
     ncPicking = null;
 
     // Replace existing marker for this point
-    ncMarkers = ncMarkers.filter(m => {
-        if (m._ncPoint === which) { map.removeLayer(m); return false; }
+    ncMarkers = ncMarkers.filter((m) => {
+        if (m._ncPoint === which) {
+            map.removeLayer(m);
+            return false;
+        }
         return true;
     });
     const m = L.marker([lat, lng], { icon: measIcon(which) }).addTo(map);
@@ -161,10 +170,10 @@ addMapClickHook(ncHandleClick);
 
 function clearNearestChecker() {
     ncPicking = null;
-    ncMarkers.forEach(m => map.removeLayer(m));
+    ncMarkers.forEach((m) => map.removeLayer(m));
     ncMarkers = [];
 
-    ['A', 'B'].forEach(w => {
+    ['A', 'B'].forEach((w) => {
         document.getElementById('ncLat' + w).value = '';
         document.getElementById('ncLng' + w).value = '';
         document.getElementById('ncPick' + w).classList.remove('meas-active');
@@ -178,16 +187,20 @@ function clearNearestChecker() {
 function ncReadPoint(which) {
     const lat = parseFloat(document.getElementById('ncLat' + which).value);
     const lng = parseFloat(document.getElementById('ncLng' + which).value);
-    return (isNaN(lat) || isNaN(lng)) ? null : { lat, lng };
+    return isNaN(lat) || isNaN(lng) ? null : { lat, lng };
 }
 
 function ncFindNearest(point, elements) {
-    let best = null, bestDist = Infinity;
+    let best = null,
+        bestDist = Infinity;
     for (const el of elements) {
         const c = getElementCenter(el);
         if (!c) continue;
         const d = haversineKm(point, c);
-        if (d < bestDist) { bestDist = d; best = el; }
+        if (d < bestDist) {
+            bestDist = d;
+            best = el;
+        }
     }
     return best ? { el: best, dist: bestDist } : null;
 }
@@ -202,9 +215,9 @@ function ncFindNearest(point, elements) {
 async function ncFetchForPoint(point, keysToFetch) {
     if (keysToFetch.length === 0) return {};
 
-    const r      = 25000;
+    const r = 25000;
     const around = `around:${r},${point.lat},${point.lng}`;
-    const lines  = [];
+    const lines = [];
     for (const key of keysToFetch) {
         const def = NC_LAYER_FILTERS[key];
         if (!def) continue;
@@ -216,7 +229,9 @@ async function ncFetchForPoint(point, keysToFetch) {
     }
     if (lines.length === 0) return {};
 
-    const data     = await overpassFetch(`[out:json][timeout:60];\n(\n  ${lines.join('\n  ')}\n);\nout center tags;`);
+    const data = await overpassFetch(
+        `[out:json][timeout:60];\n(\n  ${lines.join('\n  ')}\n);\nout center tags;`,
+    );
     const allElems = data.elements ?? [];
 
     const result = {};
@@ -241,14 +256,13 @@ async function runNearestCheck() {
 
     // Collect checked layer keys that have NC support
     const activeKeys = Array.from(document.querySelectorAll('[id^="lyr-"]:checked'))
-        .map(cb => cb.id.replace('lyr-', ''))
-        .filter(key => key in NC_LAYER_FILTERS);
+        .map((cb) => cb.id.replace('lyr-', ''))
+        .filter((key) => key in NC_LAYER_FILTERS);
 
     const resultEl = document.getElementById('ncResult');
 
     if (activeKeys.length === 0) {
-        resultEl.innerHTML =
-            `<div class="nc-result nc-miss">${t('nc_no_layers')}</div>`;
+        resultEl.innerHTML = `<div class="nc-result nc-miss">${t('nc_no_layers')}</div>`;
         return;
     }
 
@@ -263,44 +277,53 @@ async function runNearestCheck() {
         const elemsByKeyA = await ncFetchForPoint(ptA, activeKeys);
         const elemsByKeyB = await ncFetchForPoint(ptB, activeKeys);
 
-        let nMatch = 0, nMiss = 0;
+        let nMatch = 0,
+            nMiss = 0;
         const rows = [];
 
         for (const key of activeKeys) {
-            const def    = LAYER_DEFS[key];
+            const def = LAYER_DEFS[key];
             if (!def) continue;
-            const icon   = def.icon ?? '📍';
-            const label  = t(def.label);
-            const nearA  = ncFindNearest(ptA, elemsByKeyA[key] ?? []);
-            const nearB  = ncFindNearest(ptB, elemsByKeyB[key] ?? []);
+            const icon = def.icon ?? '📍';
+            const label = t(def.label);
+            const nearA = ncFindNearest(ptA, elemsByKeyA[key] ?? []);
+            const nearB = ncFindNearest(ptB, elemsByKeyB[key] ?? []);
 
             if (!nearA && !nearB) {
                 rows.push(ncRowNoData(icon, label));
                 continue;
             }
 
-            const nameA  = nearA?.el.tags?.name ?? '?';
-            const nameB  = nearB?.el.tags?.name ?? '?';
-            const distA  = nearA ? fmtNearDist(nearA.dist) : '–';
-            const distB  = nearB ? fmtNearDist(nearB.dist) : '–';
-            const same   = !!(nearA && nearB &&
-                haversineKm(getElementCenter(nearA.el), getElementCenter(nearB.el)) < 0.1);
+            const nameA = nearA?.el.tags?.name ?? '?';
+            const nameB = nearB?.el.tags?.name ?? '?';
+            const distA = nearA ? fmtNearDist(nearA.dist) : '–';
+            const distB = nearB ? fmtNearDist(nearB.dist) : '–';
+            const same = !!(
+                nearA &&
+                nearB &&
+                haversineKm(getElementCenter(nearA.el), getElementCenter(nearB.el)) < 0.1
+            );
 
-            if (same) nMatch++; else nMiss++;
-            rows.push(same
-                ? ncRowMatch(icon, label, nameA, distA, distB)
-                : ncRowMiss (icon, label, nameA, distA, nameB, distB));
+            if (same) nMatch++;
+            else nMiss++;
+            rows.push(
+                same
+                    ? ncRowMatch(icon, label, nameA, distA, distB)
+                    : ncRowMiss(icon, label, nameA, distA, nameB, distB),
+            );
         }
 
         const total = nMatch + nMiss;
         let summaryClass = '';
-        if (total > 0) summaryClass = nMatch === total ? 'all-match' : nMiss === total ? 'no-match' : 'part-match';
-        const summaryText = total === 0
-            ? t('nc_no_data')
-            : `${nMatch > 0 ? `✅ ${nMatch}` : ''}${nMatch > 0 && nMiss > 0 ? ' · ' : ''}${nMiss > 0 ? `❌ ${nMiss}` : ''}`;
+        if (total > 0)
+            summaryClass =
+                nMatch === total ? 'all-match' : nMiss === total ? 'no-match' : 'part-match';
+        const summaryText =
+            total === 0
+                ? t('nc_no_data')
+                : `${nMatch > 0 ? `✅ ${nMatch}` : ''}${nMatch > 0 && nMiss > 0 ? ' · ' : ''}${nMiss > 0 ? `❌ ${nMiss}` : ''}`;
 
-        resultEl.innerHTML =
-            `<div class="nc-summary ${summaryClass}">${summaryText}</div>${rows.join('')}`;
+        resultEl.innerHTML = `<div class="nc-summary ${summaryClass}">${summaryText}</div>${rows.join('')}`;
         setStatus(t('status_admin_done'), 'ok');
     } catch (err) {
         resultEl.innerHTML = `<div class="nc-result nc-miss">${t('status_err_popup')}</div>`;

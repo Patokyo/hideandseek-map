@@ -6,13 +6,13 @@
 // The message is mirrored into #statusToast, which is only visible on small
 // screens where the sidebar (and its status bar) is hidden behind the drawer.
 function setStatus(msg, type = '') {
-    const el    = document.getElementById('status');
+    const el = document.getElementById('status');
     el.textContent = msg;
-    el.className   = type;
+    el.className = type;
 
     const toast = document.getElementById('statusToast');
     toast.textContent = msg;
-    toast.className   = msg ? `show ${type}` : '';
+    toast.className = msg ? `show ${type}` : '';
 }
 
 // Escape HTML special characters (for popup content)
@@ -35,12 +35,12 @@ function printMap() {
 function setColorMode(mode) {
     colorMode = mode;
     localStorage.setItem('colorMode', mode);
-    PLZ_COLORS      = COLOR_THEMES[mode].plz;
+    PLZ_COLORS = COLOR_THEMES[mode].plz;
     INTERVAL_COLORS = COLOR_THEMES[mode].interval;
     BUS_ROUTE_COLORS = COLOR_THEMES[mode].busRoute;
     recolorActiveLayers();
     recolorBusRoutes();
-    document.querySelectorAll('.color-mode-btn').forEach(b => {
+    document.querySelectorAll('.color-mode-btn').forEach((b) => {
         b.classList.toggle('active', b.dataset.mode === mode);
     });
 }
@@ -51,7 +51,7 @@ function initColorMode() {
         if (LAYER_DEFS[id]) LAYER_DEFS[id].color = color;
     });
     updateLayerDots();
-    document.querySelectorAll('.color-mode-btn').forEach(b => {
+    document.querySelectorAll('.color-mode-btn').forEach((b) => {
         b.classList.toggle('active', b.dataset.mode === colorMode);
     });
 }
@@ -68,7 +68,10 @@ function clearAll() {
     clearAllRadii();
     clearAllLayers();
     clearAllBoundaryLayers();
-    if (clickMarker) { map.removeLayer(clickMarker); clickMarker = null; }
+    if (clickMarker) {
+        map.removeLayer(clickMarker);
+        clickMarker = null;
+    }
     clickedPoint = null;
     document.getElementById('clickCoords').textContent = t('coord_hint');
     updatePermalink();
@@ -82,7 +85,7 @@ function toggleStylePopover() {
 
 function selectStyle(btn, key) {
     setTileLayer(key);
-    document.querySelectorAll('.style-opt').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.style-opt').forEach((b) => b.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('stylePopover').classList.remove('open');
     updatePermalink();
@@ -96,11 +99,11 @@ function toggleLayerPanel() {
 }
 
 function updateLayerFabBadge() {
-    const count  = document.querySelectorAll('[id^="lyr-"]:checked').length;
-    const badge  = document.getElementById('layerFabBadge');
-    const fab    = document.getElementById('layerFab');
+    const count = document.querySelectorAll('[id^="lyr-"]:checked').length;
+    const badge = document.getElementById('layerFabBadge');
+    const fab = document.getElementById('layerFab');
     if (count > 0) {
-        badge.textContent  = count;
+        badge.textContent = count;
         badge.style.display = 'flex';
         fab.classList.add('lp-active');
     } else {
@@ -132,7 +135,7 @@ function closeSidebarForPick() {
 
 // ── Error popup ───────────────────────────────────────────────────────────────
 function showErrorPopup(msg) {
-    document.getElementById('errorText').textContent  = msg;
+    document.getElementById('errorText').textContent = msg;
     document.getElementById('errorCopyBtn').textContent = t('err_copy');
     document.getElementById('errorOverlay').style.display = 'flex';
 }
@@ -143,15 +146,19 @@ function closeErrorPopup() {
 
 function copyErrorText() {
     const text = document.getElementById('errorText').textContent;
-    const btn  = document.getElementById('errorCopyBtn');
+    const btn = document.getElementById('errorCopyBtn');
 
     const confirm = () => {
         btn.textContent = t('err_copied');
-        setTimeout(() => { btn.textContent = t('err_copy'); }, 2000);
+        setTimeout(() => {
+            btn.textContent = t('err_copy');
+        }, 2000);
     };
     const fail = () => {
         btn.textContent = t('err_copy_fail');
-        setTimeout(() => { btn.textContent = t('err_copy'); }, 2000);
+        setTimeout(() => {
+            btn.textContent = t('err_copy');
+        }, 2000);
     };
 
     if (navigator.clipboard?.writeText) {
@@ -169,7 +176,9 @@ function copyErrorText() {
         const ok = document.execCommand('copy');
         document.body.removeChild(ta);
         ok ? confirm() : fail();
-    } catch (_) { fail(); }
+    } catch (_) {
+        fail();
+    }
 }
 
 // Close error popup when clicking the backdrop
@@ -178,11 +187,11 @@ document.getElementById('errorOverlay').addEventListener('click', (e) => {
 });
 
 // Trigger search on Enter in the city field
-document.getElementById('cityInput').addEventListener('keydown', e => {
+document.getElementById('cityInput').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') searchCity();
 });
 
 // Trigger addBusRoute on Enter in the bus route input
-document.getElementById('busRouteInput').addEventListener('keydown', e => {
+document.getElementById('busRouteInput').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') addBusRoute();
 });

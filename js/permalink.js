@@ -32,7 +32,7 @@ function buildPermalink() {
     // Radii — one `r` param per drawn circle/set
     // Single:   lat,lng,km
     // Interval: lat,lng,step,count,i
-    Object.values(radiusItems).forEach(item => {
+    Object.values(radiusItems).forEach((item) => {
         const lat = item.center.lat.toFixed(5);
         const lng = item.center.lng.toFixed(5);
         if (item.type === 'single') {
@@ -43,11 +43,11 @@ function buildPermalink() {
     });
 
     // Bus routes — one `route` param per drawn line
-    Object.values(busRouteItems).forEach(item => p.append('route', item.ref));
+    Object.values(busRouteItems).forEach((item) => p.append('route', item.ref));
 
     // Tentacle questions — one `tent` param per question that has a center set
     // Format: poiType,radius,unit,lat,lng,selectedPoiId (0 = none)
-    tentSerialise().forEach(s => p.append('tent', s));
+    tentSerialise().forEach((s) => p.append('tent', s));
 
     return `${location.pathname}?${p.toString()}`;
 }
@@ -61,13 +61,20 @@ function updatePermalink() {
 // ── Copy the current permalink to the clipboard ───────────────────────────────
 function copyPermalink() {
     const btn = document.getElementById('permalinkFab');
-    navigator.clipboard?.writeText(location.href).then(() => {
-        btn.textContent = '✅';
-        setTimeout(() => { btn.textContent = '🔗'; }, 1500);
-    }).catch(() => {
-        btn.textContent = '✗';
-        setTimeout(() => { btn.textContent = '🔗'; }, 1500);
-    });
+    navigator.clipboard
+        ?.writeText(location.href)
+        .then(() => {
+            btn.textContent = '✅';
+            setTimeout(() => {
+                btn.textContent = '🔗';
+            }, 1500);
+        })
+        .catch(() => {
+            btn.textContent = '✗';
+            setTimeout(() => {
+                btn.textContent = '🔗';
+            }, 1500);
+        });
 }
 
 // ── Restore the full app state from URL params on page load ───────────────────
@@ -81,7 +88,7 @@ async function loadFromPermalink() {
     const styleKey = p.get('style');
     if (styleKey && TILE_LAYERS[styleKey]) {
         setTileLayer(styleKey);
-        document.querySelectorAll('.style-opt').forEach(b => {
+        document.querySelectorAll('.style-opt').forEach((b) => {
             b.classList.toggle('active', b.dataset.tile === styleKey);
         });
     }
@@ -99,7 +106,7 @@ async function loadFromPermalink() {
     // boundary-panel button). This prevents orphaned layers that can't be turned off.
     const layerIds = (p.get('layers') ?? '').split(',').filter(Boolean);
     for (const id of layerIds) {
-        const cb     = document.getElementById('lyr-' + id);
+        const cb = document.getElementById('lyr-' + id);
         const bndBtn = document.getElementById('bnd-' + id);
         if (cb) {
             cb.checked = true;
@@ -133,10 +140,10 @@ async function loadFromPermalink() {
         setClickedPoint(L.latLng(lat, lng));
 
         if (parts[4] === 'i') {
-            const step  = parseFloat(parts[2]);
+            const step = parseFloat(parts[2]);
             const count = parseInt(parts[3]);
             if (isNaN(step) || isNaN(count)) continue;
-            document.getElementById('intervalStep').value  = fromKm(step);
+            document.getElementById('intervalStep').value = fromKm(step);
             document.getElementById('intervalCount').value = count;
             setRadiusMode('interval');
         } else {

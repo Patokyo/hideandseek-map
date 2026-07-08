@@ -5,29 +5,74 @@
 // relQ: relations werden separat abgefragt da `out center` für relations
 // Koordinaten liefert (wichtig für große Krankenhäuser, Museen etc. in OSM)
 const TENT_TYPES = {
-    museum:    { label: 'lyr_museum',        icon: '🏛️',
-                 nodeQ: '"tourism"="museum"',                     wayQ: '"tourism"="museum"',         relQ: '"tourism"="museum"' },
-    station:   { label: 'lyr_stations',      icon: '🚉',
-                 nodeQ: '"railway"~"^(station|halt|tram_stop)$"', wayQ: null,                         relQ: null },
-    hospital:  { label: 'lyr_hospitals',     icon: '🏥',
-                 nodeQ: '"amenity"="hospital"',                   wayQ: '"amenity"="hospital"',       relQ: '"amenity"="hospital"' },
-    cinema:    { label: 'lyr_cinema',        icon: '🎬',
-                 nodeQ: '"amenity"="cinema"',                     wayQ: '"amenity"="cinema"',         relQ: '"amenity"="cinema"' },
-    library:   { label: 'lyr_library',       icon: '📚',
-                 nodeQ: '"amenity"="library"',                    wayQ: '"amenity"="library"',        relQ: '"amenity"="library"' },
-    zoo:       { label: 'lyr_zoo',           icon: '🦁',
-                 nodeQ: '"tourism"="zoo"',                        wayQ: '"tourism"="zoo"',            relQ: '"tourism"="zoo"' },
-    aquarium:  { label: 'lyr_aquarium',      icon: '🐠',
-                 nodeQ: '"tourism"="aquarium"',                   wayQ: '"tourism"="aquarium"',       relQ: '"tourism"="aquarium"' },
-    amusement: { label: 'lyr_amusementpark', icon: '🎡',
-                 nodeQ: '"leisure"="amusement_park"',             wayQ: '"leisure"="amusement_park"', relQ: '"leisure"="amusement_park"' },
-    golf:      { label: 'lyr_golf',          icon: '⛳',
-                 nodeQ: '"leisure"="golf_course"',                wayQ: '"leisure"="golf_course"',    relQ: '"leisure"="golf_course"' },
+    museum: {
+        label: 'lyr_museum',
+        icon: '🏛️',
+        nodeQ: '"tourism"="museum"',
+        wayQ: '"tourism"="museum"',
+        relQ: '"tourism"="museum"',
+    },
+    station: {
+        label: 'lyr_stations',
+        icon: '🚉',
+        nodeQ: '"railway"~"^(station|halt|tram_stop)$"',
+        wayQ: null,
+        relQ: null,
+    },
+    hospital: {
+        label: 'lyr_hospitals',
+        icon: '🏥',
+        nodeQ: '"amenity"="hospital"',
+        wayQ: '"amenity"="hospital"',
+        relQ: '"amenity"="hospital"',
+    },
+    cinema: {
+        label: 'lyr_cinema',
+        icon: '🎬',
+        nodeQ: '"amenity"="cinema"',
+        wayQ: '"amenity"="cinema"',
+        relQ: '"amenity"="cinema"',
+    },
+    library: {
+        label: 'lyr_library',
+        icon: '📚',
+        nodeQ: '"amenity"="library"',
+        wayQ: '"amenity"="library"',
+        relQ: '"amenity"="library"',
+    },
+    zoo: {
+        label: 'lyr_zoo',
+        icon: '🦁',
+        nodeQ: '"tourism"="zoo"',
+        wayQ: '"tourism"="zoo"',
+        relQ: '"tourism"="zoo"',
+    },
+    aquarium: {
+        label: 'lyr_aquarium',
+        icon: '🐠',
+        nodeQ: '"tourism"="aquarium"',
+        wayQ: '"tourism"="aquarium"',
+        relQ: '"tourism"="aquarium"',
+    },
+    amusement: {
+        label: 'lyr_amusementpark',
+        icon: '🎡',
+        nodeQ: '"leisure"="amusement_park"',
+        wayQ: '"leisure"="amusement_park"',
+        relQ: '"leisure"="amusement_park"',
+    },
+    golf: {
+        label: 'lyr_golf',
+        icon: '⛳',
+        nodeQ: '"leisure"="golf_course"',
+        wayQ: '"leisure"="golf_course"',
+        relQ: '"leisure"="golf_course"',
+    },
 };
 
 // ── Module state ──────────────────────────────────────────────────────────────
 let _tentQuestions = [];
-let _tentNextId    = 1;
+let _tentNextId = 1;
 let _tentPickingId = null;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -37,11 +82,11 @@ function _tentKm(q) {
 
 function _tentBuildQuery(type, lat, lng, radiusM) {
     const td = TENT_TYPES[type];
-    const a  = `around:${Math.ceil(radiusM)},${lat},${lng}`;
+    const a = `around:${Math.ceil(radiusM)},${lat},${lng}`;
     const lines = [];
     if (td.nodeQ) lines.push(`  node(${a})[${td.nodeQ}];`);
-    if (td.wayQ)  lines.push(`  way(${a})[${td.wayQ}];`);
-    if (td.relQ)  lines.push(`  relation(${a})[${td.relQ}];`);
+    if (td.wayQ) lines.push(`  way(${a})[${td.wayQ}];`);
+    if (td.relQ) lines.push(`  relation(${a})[${td.relQ}];`);
     return `[out:json][timeout:60];\n(\n${lines.join('\n')}\n);\nout center tags;`;
 }
 
@@ -50,15 +95,14 @@ addMapClickHook((e) => {
     if (_tentPickingId === null) return false;
     const id = _tentPickingId;
     _tentPickingId = null;
-    const q = _tentQuestions.find(x => x.id === id);
+    const q = _tentQuestions.find((x) => x.id === id);
     if (!q) return false;
 
     q.centerLat = e.latlng.lat;
     q.centerLng = e.latlng.lng;
 
     const coordEl = document.getElementById(`tent-coord-${id}`);
-    if (coordEl) coordEl.textContent =
-        `${q.centerLat.toFixed(5)}° N  ${q.centerLng.toFixed(5)}° E`;
+    if (coordEl) coordEl.textContent = `${q.centerLat.toFixed(5)}° N  ${q.centerLng.toFixed(5)}° E`;
 
     document.getElementById(`tent-pick-btn-${id}`)?.classList.remove('meas-active');
     setStatus('', '');
@@ -68,52 +112,69 @@ addMapClickHook((e) => {
 
 // ── Fetch POIs from Overpass ──────────────────────────────────────────────────
 async function _tentFetchPOIs(id) {
-    const q = _tentQuestions.find(x => x.id === id);
+    const q = _tentQuestions.find((x) => x.id === id);
     if (!q || q.centerLat === null) return;
 
     const radiusKm = _tentKm(q);
-    const query    = _tentBuildQuery(q.poiType, q.centerLat, q.centerLng, radiusKm * 1000);
+    const query = _tentBuildQuery(q.poiType, q.centerLat, q.centerLng, radiusKm * 1000);
 
     const sel = document.getElementById(`tent-poi-select-${id}`);
-    if (sel) { sel.innerHTML = `<option>${t('tent_loading')}</option>`; sel.disabled = true; }
+    if (sel) {
+        sel.innerHTML = `<option>${t('tent_loading')}</option>`;
+        sel.disabled = true;
+    }
     setStatus(tf('tent_status_loading', t(TENT_TYPES[q.poiType].label)), 'loading');
 
     try {
         const data = await overpassFetch(query);
-        const raw  = (data.elements ?? [])
-            .map(el => {
+        const raw = (data.elements ?? [])
+            .map((el) => {
                 const c = getElementCenter(el);
                 if (!c) return null;
                 return { name: el.tags?.name ?? '?', lat: c.lat, lng: c.lng, id: el.id };
             })
             .filter(Boolean)
-            .filter(p => haversineKm({ lat: q.centerLat, lng: q.centerLng }, p) <= radiusKm);
+            .filter((p) => haversineKm({ lat: q.centerLat, lng: q.centerLng }, p) <= radiusKm);
 
         // Deduplicate by name (keep first occurrence, sorted alphabetically)
         const seen = new Set();
         q.fetchedPOIs = raw
-            .filter(p => { if (seen.has(p.name)) return false; seen.add(p.name); return true; })
+            .filter((p) => {
+                if (seen.has(p.name)) return false;
+                seen.add(p.name);
+                return true;
+            })
             .sort((a, b) => a.name.localeCompare(b.name));
 
         if (sel) {
-            sel.innerHTML = `<option value="">${t('tent_select_poi')}</option>` +
-                q.fetchedPOIs.map(p =>
-                    `<option value="${p.id}"${q.selectedPOI?.id === p.id ? ' selected' : ''}>${esc(p.name)}</option>`
-                ).join('');
+            sel.innerHTML =
+                `<option value="">${t('tent_select_poi')}</option>` +
+                q.fetchedPOIs
+                    .map(
+                        (p) =>
+                            `<option value="${p.id}"${q.selectedPOI?.id === p.id ? ' selected' : ''}>${esc(p.name)}</option>`,
+                    )
+                    .join('');
             sel.disabled = false;
         }
         // Re-resolve the previous selection against the fresh POI list: redraw
         // with the new radius if still present, otherwise drop the stale polygon.
         if (q.selectedPOI) {
-            q.selectedPOI = q.fetchedPOIs.find(p => p.id === q.selectedPOI.id) ?? null;
+            q.selectedPOI = q.fetchedPOIs.find((p) => p.id === q.selectedPOI.id) ?? null;
             if (q.selectedPOI) _tentDraw(id);
             else _tentClearLayers(q);
         }
 
-        setStatus(tf('tent_status_found', q.fetchedPOIs.length, t(TENT_TYPES[q.poiType].label)), 'ok');
+        setStatus(
+            tf('tent_status_found', q.fetchedPOIs.length, t(TENT_TYPES[q.poiType].label)),
+            'ok',
+        );
         updatePermalink();
     } catch (err) {
-        if (sel) { sel.innerHTML = `<option value="">${t('tent_error')}</option>`; sel.disabled = false; }
+        if (sel) {
+            sel.innerHTML = `<option value="">${t('tent_error')}</option>`;
+            sel.disabled = false;
+        }
         showErrorPopup(err.message);
         setStatus('Error loading POIs', 'error');
     }
@@ -125,50 +186,51 @@ async function _tentFetchPOIs(id) {
 // Fix: project to local km coords → compute Voronoi → reproject to lat/lng.
 function _tentProjectedVoronoi(pois, centerLat, centerLng, radiusKm) {
     const KM_PER_DEG = 111;
-    const cosLat = Math.cos(centerLat * Math.PI / 180);
+    const cosLat = Math.cos((centerLat * Math.PI) / 180);
 
     // Project each POI to local km plane centered on (centerLat, centerLng)
-    const proj = pois.map(p => ({
+    const proj = pois.map((p) => ({
         id: p.id,
         px: (p.lng - centerLng) * cosLat * KM_PER_DEG,
         py: (p.lat - centerLat) * KM_PER_DEG,
     }));
 
-    const turfPts = turf.featureCollection(
-        proj.map(p => turf.point([p.px, p.py], { id: p.id }))
-    );
+    const turfPts = turf.featureCollection(proj.map((p) => turf.point([p.px, p.py], { id: p.id })));
 
-    const ext     = radiusKm * 2.5;
+    const ext = radiusKm * 2.5;
     const voronoi = turf.voronoi(turfPts, { bbox: [-ext, -ext, ext, ext] });
     if (!voronoi?.features) return null;
 
     // Reproject polygon vertices back to lat/lng
     return turf.featureCollection(
-        voronoi.features.map(f => {
-            if (!f?.geometry?.coordinates) return null;
-            return turf.polygon(
-                f.geometry.coordinates.map(ring =>
-                    ring.map(([px, py]) => [
-                        centerLng + px / (cosLat * KM_PER_DEG),
-                        centerLat + py / KM_PER_DEG,
-                    ])
-                ),
-                f.properties
-            );
-        }).filter(Boolean)
+        voronoi.features
+            .map((f) => {
+                if (!f?.geometry?.coordinates) return null;
+                return turf.polygon(
+                    f.geometry.coordinates.map((ring) =>
+                        ring.map(([px, py]) => [
+                            centerLng + px / (cosLat * KM_PER_DEG),
+                            centerLat + py / KM_PER_DEG,
+                        ]),
+                    ),
+                    f.properties,
+                );
+            })
+            .filter(Boolean),
     );
 }
 
 // ── Compute Voronoi and draw tentacle polygon ─────────────────────────────────
 async function _tentDraw(id) {
-    const q = _tentQuestions.find(x => x.id === id);
+    const q = _tentQuestions.find((x) => x.id === id);
     if (!q || !q.selectedPOI || q.fetchedPOIs.length === 0) return;
 
     _tentClearLayers(q);
 
     const radiusKm = _tentKm(q);
-    const circle   = turf.circle([q.centerLng, q.centerLat], radiusKm, {
-        units: 'kilometers', steps: 128,
+    const circle = turf.circle([q.centerLng, q.centerLat], radiusKm, {
+        units: 'kilometers',
+        steps: 128,
     });
 
     if (q.fetchedPOIs.length === 1) {
@@ -176,33 +238,35 @@ async function _tentDraw(id) {
         q.layers.push(
             L.geoJSON(circle, {
                 style: { color: '#3b82f6', weight: 2.5, fillColor: '#3b82f6', fillOpacity: 0.18 },
-            }).addTo(map)
+            }).addTo(map),
         );
     } else {
-        const voronoi = _tentProjectedVoronoi(
-            q.fetchedPOIs, q.centerLat, q.centerLng, radiusKm
-        );
+        const voronoi = _tentProjectedVoronoi(q.fetchedPOIs, q.centerLat, q.centerLng, radiusKm);
         if (!voronoi?.features?.length) return;
 
-        const selIdx = q.fetchedPOIs.findIndex(p => p.id === q.selectedPOI.id);
+        const selIdx = q.fetchedPOIs.findIndex((p) => p.id === q.selectedPOI.id);
 
         voronoi.features.forEach((cell, i) => {
             if (!cell) return;
             let clipped = null;
-            try { clipped = turf.intersect(cell, circle); } catch { return; }
+            try {
+                clipped = turf.intersect(cell, circle);
+            } catch {
+                return;
+            }
             if (!clipped) return;
 
-            const isSel = (i === selIdx);
+            const isSel = i === selIdx;
             q.layers.push(
                 L.geoJSON(clipped, {
                     style: {
-                        color:       isSel ? '#3b82f6' : '#ef4444',
-                        weight:      isSel ? 2.5 : 1.5,
-                        fillColor:   isSel ? '#3b82f6' : '#ef4444',
+                        color: isSel ? '#3b82f6' : '#ef4444',
+                        weight: isSel ? 2.5 : 1.5,
+                        fillColor: isSel ? '#3b82f6' : '#ef4444',
                         fillOpacity: isSel ? 0.18 : 0.12,
-                        dashArray:   isSel ? undefined : '6 4',
+                        dashArray: isSel ? undefined : '6 4',
                     },
-                }).addTo(map)
+                }).addTo(map),
             );
         });
     }
@@ -210,32 +274,36 @@ async function _tentDraw(id) {
     // Center dot
     q.layers.push(
         L.circleMarker([q.centerLat, q.centerLng], {
-            radius: 5, color: '#3b82f6', fillColor: '#3b82f6',
-            fillOpacity: 1, weight: 2, interactive: false,
-        }).addTo(map)
+            radius: 5,
+            color: '#3b82f6',
+            fillColor: '#3b82f6',
+            fillOpacity: 1,
+            weight: 2,
+            interactive: false,
+        }).addTo(map),
     );
 
     // POI markers
     const icon = TENT_TYPES[q.poiType].icon;
-    q.fetchedPOIs.forEach(p => {
-        const isSel = (p.id === q.selectedPOI?.id);
+    q.fetchedPOIs.forEach((p) => {
+        const isSel = p.id === q.selectedPOI?.id;
         q.layers.push(
             L.circleMarker([p.lat, p.lng], {
-                radius:      isSel ? 8 : 5,
-                color:       '#fff',
-                fillColor:   isSel ? '#3b82f6' : '#6b7280',
+                radius: isSel ? 8 : 5,
+                color: '#fff',
+                fillColor: isSel ? '#3b82f6' : '#6b7280',
                 fillOpacity: 0.9,
-                weight:      2,
+                weight: 2,
             })
-            .bindPopup(`<div class="popup-name">${icon} ${esc(p.name)}</div>`)
-            .addTo(map)
+                .bindPopup(`<div class="popup-name">${icon} ${esc(p.name)}</div>`)
+                .addTo(map),
         );
     });
 }
 
 // ── Clear all map layers for a question ───────────────────────────────────────
 function _tentClearLayers(q) {
-    q.layers.forEach(l => map.removeLayer(l));
+    q.layers.forEach((l) => map.removeLayer(l));
     q.layers = [];
 }
 
@@ -245,20 +313,20 @@ function addTentacleQuestion() {
     const id = _tentNextId++;
     _tentQuestions.push({
         id,
-        radius:      15,
-        unit:        'km',
-        poiType:     'museum',
-        centerLat:   null,
-        centerLng:   null,
+        radius: 15,
+        unit: 'km',
+        poiType: 'museum',
+        centerLat: null,
+        centerLng: null,
         selectedPOI: null,
         fetchedPOIs: [],
-        layers:      [],
+        layers: [],
     });
     _tentRenderCards();
 }
 
 function removeTentacleQuestion(id) {
-    const idx = _tentQuestions.findIndex(x => x.id === id);
+    const idx = _tentQuestions.findIndex((x) => x.id === id);
     if (idx === -1) return;
     _tentClearLayers(_tentQuestions[idx]);
     _tentQuestions.splice(idx, 1);
@@ -274,23 +342,23 @@ function clearAllTentacles() {
 }
 
 function tentSetRadius(id, val) {
-    const q = _tentQuestions.find(x => x.id === id);
+    const q = _tentQuestions.find((x) => x.id === id);
     if (!q) return;
     q.radius = parseFloat(val) || 15;
     if (q.centerLat !== null) _tentFetchPOIs(id);
 }
 
 function tentSetUnit(id, unit) {
-    const q = _tentQuestions.find(x => x.id === id);
+    const q = _tentQuestions.find((x) => x.id === id);
     if (!q) return;
     q.unit = unit;
     if (q.centerLat !== null) _tentFetchPOIs(id);
 }
 
 function tentSetType(id, type) {
-    const q = _tentQuestions.find(x => x.id === id);
+    const q = _tentQuestions.find((x) => x.id === id);
     if (!q) return;
-    q.poiType    = type;
+    q.poiType = type;
     q.selectedPOI = null;
     q.fetchedPOIs = [];
     _tentClearLayers(q);
@@ -307,9 +375,9 @@ function tentStartPick(id) {
 }
 
 function tentSelectPOI(id, val) {
-    const q = _tentQuestions.find(x => x.id === id);
+    const q = _tentQuestions.find((x) => x.id === id);
     if (!q) return;
-    q.selectedPOI = q.fetchedPOIs.find(p => String(p.id) === String(val)) ?? null;
+    q.selectedPOI = q.fetchedPOIs.find((p) => String(p.id) === String(val)) ?? null;
     if (q.selectedPOI) _tentDraw(id);
     else _tentClearLayers(q);
     updatePermalink();
@@ -318,11 +386,16 @@ function tentSelectPOI(id, val) {
 // ── Permalink serialisation / restore ────────────────────────────────────────
 function tentSerialise() {
     return _tentQuestions
-        .filter(q => q.centerLat !== null)
-        .map(q =>
-            [q.poiType, q.radius, q.unit,
-             q.centerLat.toFixed(5), q.centerLng.toFixed(5),
-             q.selectedPOI?.id ?? 0].join(',')
+        .filter((q) => q.centerLat !== null)
+        .map((q) =>
+            [
+                q.poiType,
+                q.radius,
+                q.unit,
+                q.centerLat.toFixed(5),
+                q.centerLng.toFixed(5),
+                q.selectedPOI?.id ?? 0,
+            ].join(','),
         );
 }
 
@@ -332,8 +405,8 @@ async function tentRestoreFromPermalink(params) {
         if (parts.length < 6) continue;
         const [poiType, radiusStr, unit, latStr, lngStr, poiIdStr] = parts;
         if (!TENT_TYPES[poiType]) continue;
-        const lat    = parseFloat(latStr);
-        const lng    = parseFloat(lngStr);
+        const lat = parseFloat(latStr);
+        const lng = parseFloat(lngStr);
         const radius = parseFloat(radiusStr);
         if (isNaN(lat) || isNaN(lng) || isNaN(radius)) continue;
 
@@ -341,13 +414,13 @@ async function tentRestoreFromPermalink(params) {
         _tentQuestions.push({
             id,
             radius,
-            unit:        unit === 'mi' ? 'mi' : 'km',
+            unit: unit === 'mi' ? 'mi' : 'km',
             poiType,
-            centerLat:   lat,
-            centerLng:   lng,
+            centerLat: lat,
+            centerLng: lng,
             selectedPOI: null,
             fetchedPOIs: [],
-            layers:      [],
+            layers: [],
         });
         _tentRenderCards();
         await _tentFetchPOIs(id);
@@ -362,24 +435,31 @@ function _tentRenderCards() {
     const el = document.getElementById('tentacleCards');
     if (!el) return;
 
-    el.innerHTML = _tentQuestions.map((q, i) => {
-        const typeOpts = Object.entries(TENT_TYPES)
-            .map(([k, v]) =>
-                `<option value="${k}"${k === q.poiType ? ' selected' : ''}>${t(v.label)}</option>`
-            ).join('');
+    el.innerHTML = _tentQuestions
+        .map((q, i) => {
+            const typeOpts = Object.entries(TENT_TYPES)
+                .map(
+                    ([k, v]) =>
+                        `<option value="${k}"${k === q.poiType ? ' selected' : ''}>${t(v.label)}</option>`,
+                )
+                .join('');
 
-        const poiOpts = q.fetchedPOIs.length
-            ? `<option value="">${t('tent_select')}</option>` +
-              q.fetchedPOIs.map(p =>
-                  `<option value="${p.id}"${q.selectedPOI?.id === p.id ? ' selected' : ''}>${esc(p.name)}</option>`
-              ).join('')
-            : `<option value="">${t('tent_select_poi')}</option>`;
+            const poiOpts = q.fetchedPOIs.length
+                ? `<option value="">${t('tent_select')}</option>` +
+                  q.fetchedPOIs
+                      .map(
+                          (p) =>
+                              `<option value="${p.id}"${q.selectedPOI?.id === p.id ? ' selected' : ''}>${esc(p.name)}</option>`,
+                      )
+                      .join('')
+                : `<option value="">${t('tent_select_poi')}</option>`;
 
-        const coordTxt = q.centerLat !== null
-            ? `${q.centerLat.toFixed(5)}° N  ${q.centerLng.toFixed(5)}° E`
-            : t('tent_set_center');
+            const coordTxt =
+                q.centerLat !== null
+                    ? `${q.centerLat.toFixed(5)}° N  ${q.centerLng.toFixed(5)}° E`
+                    : t('tent_set_center');
 
-        return `
+            return `
 <div class="tent-card" id="tent-${q.id}">
   <div class="tent-card-hdr">
     <span class="tent-card-title">${tf('tent_card_title', i + 1)}</span>
@@ -404,5 +484,6 @@ function _tentRenderCards() {
     ${poiOpts}
   </select>
 </div>`;
-    }).join('');
+        })
+        .join('');
 }

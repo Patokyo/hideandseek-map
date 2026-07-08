@@ -1,12 +1,12 @@
 'use strict';
 
-let adminMode           = null;   // null | 'A' | 'B'
-let adminA              = null;   // { latlng, address } | null
-let adminB              = null;
-let adminMarkers        = [];
+let adminMode = null; // null | 'A' | 'B'
+let adminA = null; // { latlng, address } | null
+let adminB = null;
+let adminMarkers = [];
 let adminBoundaryLayers = [];
-let adminHighlightA     = null;   // level-1 highlight polygon for point A
-let adminHighlightB     = null;   // level-1 highlight polygon for point B
+let adminHighlightA = null; // level-1 highlight polygon for point A
+let adminHighlightB = null; // level-1 highlight polygon for point B
 
 // Nominatim address fields to check, in priority order, for each of the 4 game levels
 const ADMIN_LEVEL_FIELDS = [
@@ -18,18 +18,21 @@ const ADMIN_LEVEL_FIELDS = [
 
 // Nominatim zoom level and style for each boundary (levels 2, 3, 4 — skip level 1 suburb)
 const BOUNDARY_STYLES = [
-    { zoom: 10, color: '#e36206', fillOpacity: 0.07 },  // 2. city
-    { zoom:  8, color: '#2289ff', fillOpacity: 0.05 },  // 3. county
-    { zoom:  5, color: '#ae63ff', fillOpacity: 0.03 },  // 4. state
+    { zoom: 10, color: '#e36206', fillOpacity: 0.07 }, // 2. city
+    { zoom: 8, color: '#2289ff', fillOpacity: 0.05 }, // 3. county
+    { zoom: 5, color: '#ae63ff', fillOpacity: 0.03 }, // 4. state
 ];
-
 
 async function reverseGeocode(latlng) {
     const res = await fetch(
-        'https://nominatim.openstreetmap.org/reverse?' + new URLSearchParams({
-            lat: latlng.lat, lon: latlng.lng,
-            format: 'json', addressdetails: 1, zoom: 14,
-        })
+        'https://nominatim.openstreetmap.org/reverse?' +
+            new URLSearchParams({
+                lat: latlng.lat,
+                lon: latlng.lng,
+                format: 'json',
+                addressdetails: 1,
+                zoom: 14,
+            }),
     );
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.json();
@@ -44,16 +47,25 @@ function extractAdminLevel(address, fields) {
 
 // Fetch + draw the level-1 (suburb/neighbourhood, zoom=14) highlight polygon
 async function fetchAndDrawHighlight(latlng, color) {
-    const result = await nominatimBoundaryLayer(
-        latlng, 14,
-        { color, weight: 3.5, opacity: 1, fillColor: color, fillOpacity: 0.38 }
-    );
+    const result = await nominatimBoundaryLayer(latlng, 14, {
+        color,
+        weight: 3.5,
+        opacity: 1,
+        fillColor: color,
+        fillOpacity: 0.38,
+    });
     return result?.layer ?? null;
 }
 
 function clearHighlights() {
-    if (adminHighlightA) { map.removeLayer(adminHighlightA); adminHighlightA = null; }
-    if (adminHighlightB) { map.removeLayer(adminHighlightB); adminHighlightB = null; }
+    if (adminHighlightA) {
+        map.removeLayer(adminHighlightA);
+        adminHighlightA = null;
+    }
+    if (adminHighlightB) {
+        map.removeLayer(adminHighlightB);
+        adminHighlightB = null;
+    }
 }
 
 // Draw boundaries at zoom levels 10 / 8 / 5 around the given point
@@ -62,26 +74,35 @@ async function fetchAndDrawBoundaries(latlng) {
     const seen = new Set();
 
     for (const { zoom, color, fillOpacity } of BOUNDARY_STYLES) {
-        const result = await nominatimBoundaryLayer(
-            latlng, zoom,
-            { color, weight: 2.5, opacity: 0.85, fillColor: color, fillOpacity }
-        );
+        const result = await nominatimBoundaryLayer(latlng, zoom, {
+            color,
+            weight: 2.5,
+            opacity: 0.85,
+            fillColor: color,
+            fillOpacity,
+        });
         if (!result) continue;
         // Skip if same OSM entity already drawn (e.g. Kreisfreie Stadt = city & county)
-        if (seen.has(result.uid)) { map.removeLayer(result.layer); continue; }
+        if (seen.has(result.uid)) {
+            map.removeLayer(result.layer);
+            continue;
+        }
         seen.add(result.uid);
         adminBoundaryLayers.push(result.layer);
     }
 }
 
 function clearBoundaryLayers() {
-    adminBoundaryLayers.forEach(l => map.removeLayer(l));
+    adminBoundaryLayers.forEach((l) => map.removeLayer(l));
     adminBoundaryLayers = [];
 }
 
 function renderAdminResult() {
     const el = document.getElementById('adminResult');
-    if (!adminA || !adminB) { el.innerHTML = ''; return; }
+    if (!adminA || !adminB) {
+        el.innerHTML = '';
+        return;
+    }
 
     const addrA = adminA.address;
     const addrB = adminB.address;
@@ -92,25 +113,32 @@ function renderAdminResult() {
     }
 
     const rows = ADMIN_LEVEL_FIELDS.map((fields, i) => {
-        const n  = i + 1;
+        const n = i + 1;
         const vA = extractAdminLevel(addrA, fields);
         const vB = extractAdminLevel(addrB, fields);
 
         let icon, cls, text;
         if (!vA && !vB) {
-            icon = '–'; cls = 'admin-na'; text = '–';
+            icon = '–';
+            cls = 'admin-na';
+            text = '–';
         } else if (vA === vB) {
-            icon = '✓'; cls = 'admin-match'; text = vA;
+            icon = '✓';
+            cls = 'admin-match';
+            text = vA;
         } else {
-            icon = '✗'; cls = 'admin-miss';
+            icon = '✗';
+            cls = 'admin-miss';
             text = `${vA ?? '?'} / ${vB ?? '?'}`;
         }
 
-        return `<div class="admin-row ${cls}">` +
+        return (
+            `<div class="admin-row ${cls}">` +
             `<span class="admin-icon">${icon}</span>` +
             `<span class="admin-n">${n}.</span>` +
             `<span class="admin-val">${esc(text)}</span>` +
-            `</div>`;
+            `</div>`
+        );
     }).join('');
 
     el.innerHTML = rows;
@@ -123,8 +151,8 @@ function toggleAdminCheck() {
         return;
     }
     adminMode = 'A';
-    adminA    = null;
-    adminB    = null;
+    adminA = null;
+    adminB = null;
     clearAdminMarkers();
     clearBoundaryLayers();
     clearHighlights();
@@ -137,19 +165,19 @@ function toggleAdminCheck() {
 
 function clearAdminCheck() {
     adminMode = null;
-    adminA    = null;
-    adminB    = null;
+    adminA = null;
+    adminB = null;
     clearAdminMarkers();
     clearBoundaryLayers();
     clearHighlights();
     document.getElementById('adminResult').innerHTML = '';
-    document.getElementById('adminBtn').textContent  = t('btn_admin_start');
+    document.getElementById('adminBtn').textContent = t('btn_admin_start');
     document.getElementById('adminBtn').classList.remove('meas-active');
     setStatus(t('status_ready'), '');
 }
 
 function clearAdminMarkers() {
-    adminMarkers.forEach(m => map.removeLayer(m));
+    adminMarkers.forEach((m) => map.removeLayer(m));
     adminMarkers = [];
 }
 
@@ -161,24 +189,29 @@ function adminHandleClick(e) {
 
     if (adminMode === 'A') {
         adminMode = 'B';
-        adminA    = { latlng, address: null };
+        adminA = { latlng, address: null };
         adminMarkers.push(L.marker(latlng, { icon: measIcon('A') }).addTo(map));
         setStatus(t('status_admin_b'), 'loading');
 
         // Text comparison data
         reverseGeocode(latlng)
-            .then(d   => { adminA.address = d.address; renderAdminResult(); })
-            .catch(err => setStatus(tf('status_err', err.message), 'error'));
+            .then((d) => {
+                adminA.address = d.address;
+                renderAdminResult();
+            })
+            .catch((err) => setStatus(tf('status_err', err.message), 'error'));
 
         // Level-1 highlight (orange) + background boundaries for levels 2/3/4
-        fetchAndDrawHighlight(latlng, '#e65e00').then(l => { adminHighlightA = l; });
+        fetchAndDrawHighlight(latlng, '#e65e00').then((l) => {
+            adminHighlightA = l;
+        });
         fetchAndDrawBoundaries(latlng);
         return true;
     }
 
     if (adminMode === 'B') {
         adminMode = null;
-        adminB    = { latlng, address: null };
+        adminB = { latlng, address: null };
         adminMarkers.push(L.marker(latlng, { icon: measIcon('B') }).addTo(map));
         document.getElementById('adminBtn').textContent = t('btn_admin_start');
         document.getElementById('adminBtn').classList.remove('meas-active');
@@ -186,11 +219,16 @@ function adminHandleClick(e) {
         renderAdminResult();
 
         reverseGeocode(latlng)
-            .then(d   => { adminB.address = d.address; renderAdminResult(); })
-            .catch(err => setStatus(tf('status_err', err.message), 'error'));
+            .then((d) => {
+                adminB.address = d.address;
+                renderAdminResult();
+            })
+            .catch((err) => setStatus(tf('status_err', err.message), 'error'));
 
         // Level-1 highlight (blue) for point B
-        fetchAndDrawHighlight(latlng, '#0091d2').then(l => { adminHighlightB = l; });
+        fetchAndDrawHighlight(latlng, '#0091d2').then((l) => {
+            adminHighlightB = l;
+        });
         return true;
     }
 

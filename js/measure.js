@@ -1,41 +1,43 @@
 'use strict';
 
 // ── State ─────────────────────────────────────────────────────────────────────
-let measMode          = null;   // null | 'A' | 'B'
-let measA             = null;
-let measB             = null;
-let measLayers        = [];
-let measComputedLayers = null;  // {line, lineLabel, semi1, semi2, zone1Label, zone2Label}
+let measMode = null; // null | 'A' | 'B'
+let measA = null;
+let measB = null;
+let measLayers = [];
+let measComputedLayers = null; // {line, lineLabel, semi1, semi2, zone1Label, zone2Label}
 
 // ── Marker icon for measurement points ───────────────────────────────────────
 function measIcon(letter) {
     return L.divIcon({
         className: 'meas-icon',
-        html:      letter,
-        iconSize:  [22, 22],
-        iconAnchor:[11, 11],
+        html: letter,
+        iconSize: [22, 22],
+        iconAnchor: [11, 11],
     });
 }
 
 // ── Haversine formula: distance in km ────────────────────────────────────────
 function haversineKm(a, b) {
-    const R    = 6371;
-    const dLat = (b.lat - a.lat) * Math.PI / 180;
-    const dLng = (b.lng - a.lng) * Math.PI / 180;
-    const x    = Math.sin(dLat / 2) ** 2 +
-                 Math.cos(a.lat * Math.PI / 180) * Math.cos(b.lat * Math.PI / 180) *
-                 Math.sin(dLng / 2) ** 2;
+    const R = 6371;
+    const dLat = ((b.lat - a.lat) * Math.PI) / 180;
+    const dLng = ((b.lng - a.lng) * Math.PI) / 180;
+    const x =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos((a.lat * Math.PI) / 180) *
+            Math.cos((b.lat * Math.PI) / 180) *
+            Math.sin(dLng / 2) ** 2;
     return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
 }
 
 // ── Bearing (degrees + compass direction) ────────────────────────────────────
 function calcBearing(a, b) {
-    const lat1 = a.lat * Math.PI / 180;
-    const lat2 = b.lat * Math.PI / 180;
-    const dLng = (b.lng - a.lng) * Math.PI / 180;
-    const y    = Math.sin(dLng) * Math.cos(lat2);
-    const x    = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
-    const deg  = (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+    const lat1 = (a.lat * Math.PI) / 180;
+    const lat2 = (b.lat * Math.PI) / 180;
+    const dLng = ((b.lng - a.lng) * Math.PI) / 180;
+    const y = Math.sin(dLng) * Math.cos(lat2);
+    const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
+    const deg = ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
     const dirs = t('compass_dirs').split(',');
     return { deg: Math.round(deg), dir: dirs[Math.round(deg / 45) % 8] };
 }
@@ -43,16 +45,19 @@ function calcBearing(a, b) {
 // ── Destination point on a sphere ────────────────────────────────────────────
 // Computes the point that lies distKm away in the direction bearingDeg.
 function destPoint(lat, lng, bearingDeg, distKm) {
-    const R  = 6371;
-    const d  = distKm / R;
-    const θ  = bearingDeg * Math.PI / 180;
-    const φ1 = lat * Math.PI / 180;
-    const λ1 = lng * Math.PI / 180;
-    const φ2 = Math.asin(Math.sin(φ1) * Math.cos(d) +
-                          Math.cos(φ1) * Math.sin(d) * Math.cos(θ));
-    const λ2 = λ1 + Math.atan2(Math.sin(θ) * Math.sin(d) * Math.cos(φ1),
-                                 Math.cos(d) - Math.sin(φ1) * Math.sin(φ2));
-    return [φ2 * 180 / Math.PI, λ2 * 180 / Math.PI];
+    const R = 6371;
+    const d = distKm / R;
+    const θ = (bearingDeg * Math.PI) / 180;
+    const φ1 = (lat * Math.PI) / 180;
+    const λ1 = (lng * Math.PI) / 180;
+    const φ2 = Math.asin(Math.sin(φ1) * Math.cos(d) + Math.cos(φ1) * Math.sin(d) * Math.cos(θ));
+    const λ2 =
+        λ1 +
+        Math.atan2(
+            Math.sin(θ) * Math.sin(d) * Math.cos(φ1),
+            Math.cos(d) - Math.sin(φ1) * Math.sin(φ2),
+        );
+    return [(φ2 * 180) / Math.PI, (λ2 * 180) / Math.PI];
 }
 
 // ── Polygon points for a semicircle ──────────────────────────────────────────
@@ -61,7 +66,7 @@ function destPoint(lat, lng, bearingDeg, distKm) {
 function buildSemicircle(lat, lng, radiusKm, startBearing, steps = 72) {
     const pts = [[lat, lng]];
     for (let i = 0; i <= steps; i++) {
-        const angle = startBearing + (180 * i / steps);
+        const angle = startBearing + (180 * i) / steps;
         pts.push(destPoint(lat, lng, angle, radiusKm));
     }
     pts.push([lat, lng]);
@@ -74,8 +79,8 @@ function buildSemicircle(lat, lng, radiusKm, startBearing, steps = 72) {
 // around the Earth. Sample points quadratically packed towards the midpoint so
 // the line stays accurate at street zoom without thousands of segments.
 function buildBisector(lat, lng, bearingDeg, halfSteps = 120) {
-    const halfC = Math.PI * 6371;   // half Earth circumference in km
-    const pts   = [];
+    const halfC = Math.PI * 6371; // half Earth circumference in km
+    const pts = [];
     for (let i = halfSteps; i >= 1; i--) {
         pts.push(destPoint(lat, lng, bearingDeg + 180, halfC * (i / halfSteps) ** 2));
     }
@@ -88,7 +93,7 @@ function buildBisector(lat, lng, bearingDeg, halfSteps = 120) {
     let prev = null;
     for (const p of pts) {
         if (prev !== null) {
-            while (p[1] - prev >  180) p[1] -= 360;
+            while (p[1] - prev > 180) p[1] -= 360;
             while (p[1] - prev < -180) p[1] += 360;
         }
         prev = p[1];
@@ -102,11 +107,11 @@ function toggleMeasure() {
         clearMeasure();
     } else {
         measMode = 'A';
-        measA    = null;
-        measB    = null;
+        measA = null;
+        measB = null;
         clearMeasLayers();
         document.getElementById('measResult').textContent = '';
-        document.getElementById('measBtn').textContent    = t('btn_measure_stop');
+        document.getElementById('measBtn').textContent = t('btn_measure_stop');
         document.getElementById('measBtn').classList.add('meas-active');
         setStatus(t('status_point_a'), 'loading');
         closeSidebarForPick();
@@ -117,13 +122,13 @@ function clearMeasure() {
     measMode = null;
     clearMeasLayers();
     document.getElementById('measResult').textContent = '';
-    document.getElementById('measBtn').textContent    = t('btn_measure_start');
+    document.getElementById('measBtn').textContent = t('btn_measure_start');
     document.getElementById('measBtn').classList.remove('meas-active');
     setStatus(t('status_ready'), '');
 }
 
 function clearMeasLayers() {
-    measLayers.forEach(l => map.removeLayer(l));
+    measLayers.forEach((l) => map.removeLayer(l));
     measLayers = [];
     measComputedLayers = null;
 }
@@ -132,21 +137,23 @@ function clearMeasLayers() {
 function redrawMeasComputed() {
     if (!measComputedLayers || !measA || !measB) return;
     const { line, lineLabel, semi1, semi2, bisector, zone1Label, zone2Label } = measComputedLayers;
-    const km           = haversineKm(measA, measB);
+    const km = haversineKm(measA, measB);
     const { deg, dir } = calcBearing(measA, measB);
-    const midLat       = (measA.lat + measB.lat) / 2;
-    const midLng       = (measA.lng + measB.lng) / 2;
-    const radius       = km / 2;
-    const labelOffset  = radius * 0.42;
+    const midLat = (measA.lat + measB.lat) / 2;
+    const midLng = (measA.lng + measB.lng) / 2;
+    const radius = km / 2;
+    const labelOffset = radius * 0.42;
 
     line.setLatLngs([measA, measB]);
     lineLabel.setLatLng([midLat, midLng]);
-    lineLabel.setIcon(L.divIcon({
-        className: '',
-        html:      `<div class="meas-line-label">${fmtDist(km)} &nbsp;·&nbsp; ${deg}° ${dir}</div>`,
-        iconSize:  [0, 0],
-        iconAnchor:[0, 11],
-    }));
+    lineLabel.setIcon(
+        L.divIcon({
+            className: '',
+            html: `<div class="meas-line-label">${fmtDist(km)} &nbsp;·&nbsp; ${deg}° ${dir}</div>`,
+            iconSize: [0, 0],
+            iconAnchor: [0, 11],
+        }),
+    );
     semi1.setLatLngs(buildSemicircle(midLat, midLng, radius, deg + 90));
     semi2.setLatLngs(buildSemicircle(midLat, midLng, radius, deg + 270));
     bisector.setLatLngs(buildBisector(midLat, midLng, deg + 90));
@@ -159,18 +166,22 @@ function redrawMeasComputed() {
 // ── Map click handler ─────────────────────────────────────────────────────────
 // Handles measurement points A and B; otherwise sets the radius centre.
 map.on('click', (e) => {
-
     // Admin division checker takes priority
     if (adminHandleClick(e)) return;
     // Feature-registered click hooks (nearestchecker, nearestpoi, …)
-    for (const hook of _mapClickHooks) { if (hook(e)) return; }
+    for (const hook of _mapClickHooks) {
+        if (hook(e)) return;
+    }
 
     // Set point A
     if (measMode === 'A') {
-        measA    = e.latlng;
+        measA = e.latlng;
         measMode = 'B';
         const mA = L.marker(measA, { icon: measIcon('A'), draggable: true }).addTo(map);
-        mA.on('drag', (ev) => { measA = ev.target.getLatLng(); redrawMeasComputed(); });
+        mA.on('drag', (ev) => {
+            measA = ev.target.getLatLng();
+            redrawMeasComputed();
+        });
         measLayers.push(mA);
         setStatus(t('status_point_b'), 'loading');
         return;
@@ -178,29 +189,34 @@ map.on('click', (e) => {
 
     // Set point B → complete measurement
     if (measMode === 'B') {
-        measB    = e.latlng;
+        measB = e.latlng;
         measMode = null;
 
-        const mB  = L.marker(measB, { icon: measIcon('B'), draggable: true }).addTo(map);
-        mB.on('drag', (ev) => { measB = ev.target.getLatLng(); redrawMeasComputed(); });
+        const mB = L.marker(measB, { icon: measIcon('B'), draggable: true }).addTo(map);
+        mB.on('drag', (ev) => {
+            measB = ev.target.getLatLng();
+            redrawMeasComputed();
+        });
 
-        const km           = haversineKm(measA, measB);
+        const km = haversineKm(measA, measB);
         const { deg, dir } = calcBearing(measA, measB);
-        const midLat       = (measA.lat + measB.lat) / 2;
-        const midLng       = (measA.lng + measB.lng) / 2;
-        const radius       = km / 2;
-        const labelOffset  = radius * 0.42;
+        const midLat = (measA.lat + measB.lat) / 2;
+        const midLng = (measA.lng + measB.lng) / 2;
+        const radius = km / 2;
+        const labelOffset = radius * 0.42;
 
         const line = L.polyline([measA, measB], {
-            color: '#e36206', weight: 2.5, dashArray: '7 5',
+            color: '#e36206',
+            weight: 2.5,
+            dashArray: '7 5',
         }).addTo(map);
 
         const lineLabel = L.marker([midLat, midLng], {
             icon: L.divIcon({
                 className: '',
-                html:      `<div class="meas-line-label">${fmtDist(km)} &nbsp;·&nbsp; ${deg}° ${dir}</div>`,
-                iconSize:  [0, 0],
-                iconAnchor:[0, 11],
+                html: `<div class="meas-line-label">${fmtDist(km)} &nbsp;·&nbsp; ${deg}° ${dir}</div>`,
+                iconSize: [0, 0],
+                iconAnchor: [0, 11],
             }),
             interactive: false,
         }).addTo(map);
@@ -217,25 +233,34 @@ map.on('click', (e) => {
         // The zone boundary (perpendicular bisector of AB) continues past the
         // semicircles: as a great circle it runs once around the entire Earth.
         const bisector = L.polyline(buildBisector(midLat, midLng, deg + 90), {
-            color: '#8b5cf6', weight: 2, dashArray: '2 6', interactive: false,
+            color: '#8b5cf6',
+            weight: 2,
+            dashArray: '2 6',
+            interactive: false,
         }).addTo(map);
 
-        const semi1 = L.polygon(
-            buildSemicircle(midLat, midLng, radius, deg + 90),
-            { color: '#e65e00', weight: 2, fillColor: '#e65e00', fillOpacity: 0.22, interactive: false }
-        ).addTo(map);
+        const semi1 = L.polygon(buildSemicircle(midLat, midLng, radius, deg + 90), {
+            color: '#e65e00',
+            weight: 2,
+            fillColor: '#e65e00',
+            fillOpacity: 0.22,
+            interactive: false,
+        }).addTo(map);
 
-        const semi2 = L.polygon(
-            buildSemicircle(midLat, midLng, radius, deg + 270),
-            { color: '#0091d2', weight: 2, fillColor: '#0091d2', fillOpacity: 0.22, interactive: false }
-        ).addTo(map);
+        const semi2 = L.polygon(buildSemicircle(midLat, midLng, radius, deg + 270), {
+            color: '#0091d2',
+            weight: 2,
+            fillColor: '#0091d2',
+            fillOpacity: 0.22,
+            interactive: false,
+        }).addTo(map);
 
         // Zone labels: geometric centroid ≈ 0.42r in the direction of each arc peak
         const zone1Label = L.marker(destPoint(midLat, midLng, deg + 180, labelOffset), {
             icon: L.divIcon({
-                className:  '',
-                html:       '<div class="zone-label zone-label-1">1</div>',
-                iconSize:   [26, 26],
+                className: '',
+                html: '<div class="zone-label zone-label-1">1</div>',
+                iconSize: [26, 26],
                 iconAnchor: [13, 13],
             }),
             interactive: false,
@@ -243,9 +268,9 @@ map.on('click', (e) => {
 
         const zone2Label = L.marker(destPoint(midLat, midLng, deg, labelOffset), {
             icon: L.divIcon({
-                className:  '',
-                html:       '<div class="zone-label zone-label-2">2</div>',
-                iconSize:   [26, 26],
+                className: '',
+                html: '<div class="zone-label zone-label-2">2</div>',
+                iconSize: [26, 26],
                 iconAnchor: [13, 13],
             }),
             interactive: false,

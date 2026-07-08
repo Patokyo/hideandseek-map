@@ -8,7 +8,7 @@ const map = L.map('map', {
 // ── Active tile layer ─────────────────────────────────────────────────────────
 let currentTileLayer = L.tileLayer(TILE_LAYERS.osm.url, {
     attribution: TILE_LAYERS.osm.attr,
-    maxZoom:     TILE_LAYERS.osm.maxZoom,
+    maxZoom: TILE_LAYERS.osm.maxZoom,
 }).addTo(map);
 
 // ── Close a popover when clicking outside it or its trigger button ────────────
@@ -16,8 +16,7 @@ function registerPopoverClickOutside(popId, fabId) {
     document.addEventListener('click', (e) => {
         const pop = document.getElementById(popId);
         const fab = document.getElementById(fabId);
-        if (pop?.classList.contains('open') &&
-            !pop.contains(e.target) && !fab.contains(e.target)) {
+        if (pop?.classList.contains('open') && !pop.contains(e.target) && !fab.contains(e.target)) {
             pop.classList.remove('open');
         }
     });
@@ -28,7 +27,9 @@ function registerPopoverClickOutside(popId, fabId) {
 // the default click behaviour (radius centre). A handler returning true consumes
 // the click.
 const _mapClickHooks = [];
-function addMapClickHook(fn) { _mapClickHooks.push(fn); }
+function addMapClickHook(fn) {
+    _mapClickHooks.push(fn);
+}
 
 // ── Switch map style ──────────────────────────────────────────────────────────
 function setTileLayer(key) {
@@ -37,6 +38,6 @@ function setTileLayer(key) {
     map.removeLayer(currentTileLayer);
     currentTileLayer = L.tileLayer(def.url, {
         attribution: def.attr,
-        maxZoom:     def.maxZoom,
+        maxZoom: def.maxZoom,
     }).addTo(map);
 }

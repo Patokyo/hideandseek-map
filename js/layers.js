@@ -7,7 +7,7 @@
 // So bb[0]=south, bb[1]=north, bb[2]=west, bb[3]=east → we swap [1] and [2].
 // Using this helper in every query avoids repeating the same index shuffle and
 // makes it obvious what the four numbers mean.
-const bbStr = bb => `${bb[0]},${bb[2]},${bb[1]},${bb[3]}`;
+const bbStr = (bb) => `${bb[0]},${bb[2]},${bb[1]},${bb[3]}`;
 
 // ════════════════════════════════════════════════════════════════════════════════
 // POI LAYER DEFINITIONS
@@ -20,7 +20,6 @@ const bbStr = bb => `${bb[0]},${bb[2]},${bb[1]},${bb[3]}`;
 //   render      → renderer function from renderers.js
 // ════════════════════════════════════════════════════════════════════════════════
 const LAYER_DEFS = {
-
     cityboundary: {
         label: 'lyr_cityboundary',
         color: '#e36206',
@@ -32,7 +31,7 @@ relation(${currentCity.osm_id});
 out geom;`;
             }
             const name = currentCity?.name?.split(',')[0]?.trim() ?? '';
-            const bb   = currentCity?.bbox ?? [0, 0, 0, 0];
+            const bb = currentCity?.bbox ?? [0, 0, 0, 0];
             return `[out:json][timeout:60];
 relation(${bbStr(bb)})["boundary"="administrative"]["name"~"^${name}$",i];
 out geom;`;
@@ -52,7 +51,7 @@ out geom;`,
     hospitals: {
         label: 'lyr_hospitals',
         color: '#ff4138',
-        icon:  '🏥',
+        icon: '🏥',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
   node(${bbStr(bb)})["amenity"="hospital"];
@@ -66,7 +65,7 @@ out center bb tags;`,
     stations: {
         label: 'lyr_stations',
         color: '#2289ff',
-        icon:  '🚉',
+        icon: '🚉',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
   node(${bbStr(bb)})["railway"~"^(station|halt|tram_stop)$"];
@@ -79,7 +78,7 @@ out center bb tags;`,
     attractions: {
         label: 'lyr_attractions',
         color: '#de6800',
-        icon:  '⭐',
+        icon: '⭐',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
   node(${bbStr(bb)})["tourism"~"^(attraction|museum|monument|artwork|viewpoint|gallery)$"];
@@ -94,7 +93,7 @@ out center bb tags;`,
     parks: {
         label: 'lyr_parks',
         color: '#2c9e3c',
-        icon:  '🌳',
+        icon: '🌳',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
   way(${bbStr(bb)})["leisure"="park"]["name"]["wikipedia"];
@@ -108,7 +107,7 @@ out center bb tags;`,
     greenspaces: {
         label: 'lyr_greenspaces',
         color: '#86efac',
-        icon:  '🌿',
+        icon: '🌿',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
   way(${bbStr(bb)})["leisure"="park"]["name"][!"wikipedia"][!"wikidata"];
@@ -120,7 +119,7 @@ out center bb tags;`,
     shopping: {
         label: 'lyr_shopping',
         color: '#ae63ff',
-        icon:  '🛍️',
+        icon: '🛍️',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
   node(${bbStr(bb)})["shop"="mall"];
@@ -131,9 +130,9 @@ out center bb tags;`,
     },
 
     busstops: {
-        label:      'lyr_busstops',
-        color:      '#a68500',
-        icon:       '🚌',
+        label: 'lyr_busstops',
+        color: '#a68500',
+        icon: '🚌',
         markerOpts: { radius: 5, color: '#000', weight: 1.5 },
         buildQuery: (bb) => `[out:json][timeout:60];
 node(${bbStr(bb)})["highway"="bus_stop"];
@@ -144,7 +143,7 @@ out;`,
     cinema: {
         label: 'lyr_cinema',
         color: '#e32cff',
-        icon:  '🎬',
+        icon: '🎬',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
   node(${bbStr(bb)})["amenity"="cinema"];
@@ -157,7 +156,7 @@ out center bb tags;`,
     zoo: {
         label: 'lyr_zoo',
         color: '#63980b',
-        icon:  '🦁',
+        icon: '🦁',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
   node(${bbStr(bb)})["tourism"="zoo"];
@@ -171,7 +170,7 @@ out center bb tags;`,
     townhall: {
         label: 'lyr_townhall',
         color: '#e06500',
-        icon:  '🏛️',
+        icon: '🏛️',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
   node(${bbStr(bb)})["amenity"="townhall"];
@@ -207,7 +206,7 @@ out geom;`,
     aquarium: {
         label: 'lyr_aquarium',
         color: '#0097b1',
-        icon:  '🐠',
+        icon: '🐠',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
   node(${bbStr(bb)})["tourism"="aquarium"];
@@ -221,7 +220,7 @@ out center bb tags;`,
     library: {
         label: 'lyr_library',
         color: '#936fff',
-        icon:  '📚',
+        icon: '📚',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
   node(${bbStr(bb)})["amenity"="library"];
@@ -234,7 +233,7 @@ out center bb tags;`,
     golf: {
         label: 'lyr_golf',
         color: '#5f9708',
-        icon:  '⛳',
+        icon: '⛳',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
   way(${bbStr(bb)})["leisure"="golf_course"];
@@ -247,7 +246,7 @@ out center bb tags;`,
     stadium: {
         label: 'lyr_stadium',
         color: '#f43f5e',
-        icon:  '🏟️',
+        icon: '🏟️',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
   node(${bbStr(bb)})["leisure"="stadium"];
@@ -261,7 +260,7 @@ out center bb tags;`,
     embassy: {
         label: 'lyr_embassy',
         color: '#c07900',
-        icon:  '🏛️',
+        icon: '🏛️',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
   node(${bbStr(bb)})["amenity"="embassy"];
@@ -274,7 +273,7 @@ out center bb tags;`,
     consulate: {
         label: 'lyr_consulate',
         color: '#d06f00',
-        icon:  '🏢',
+        icon: '🏢',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
   node(${bbStr(bb)})["amenity"="consulate"];
@@ -287,7 +286,7 @@ out center bb tags;`,
     cemetery: {
         label: 'lyr_cemetery',
         color: '#6b7280',
-        icon:  '⛪',
+        icon: '⛪',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
   way(${bbStr(bb)})["landuse"="cemetery"];
@@ -302,7 +301,7 @@ out center bb tags;`,
     swimmingpool: {
         label: 'lyr_swimmingpool',
         color: '#0497ad',
-        icon:  '🏊',
+        icon: '🏊',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
   node(${bbStr(bb)})["leisure"="swimming_pool"]["name"];
@@ -317,7 +316,7 @@ out center bb tags;`,
     police: {
         label: 'lyr_police',
         color: '#6366f1',
-        icon:  '🚔',
+        icon: '🚔',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
   node(${bbStr(bb)})["amenity"="police"];
@@ -330,7 +329,7 @@ out center bb tags;`,
     firestation: {
         label: 'lyr_firestation',
         color: '#ef4444',
-        icon:  '🚒',
+        icon: '🚒',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
   node(${bbStr(bb)})["amenity"="fire_station"];
@@ -343,7 +342,7 @@ out center bb tags;`,
     airports: {
         label: 'lyr_airports',
         color: '#60a5fa',
-        icon:  '✈️',
+        icon: '✈️',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
   node(${bbStr(bb)})["aeroway"="aerodrome"]["iata"];
@@ -357,7 +356,7 @@ out center bb tags;`,
     fastfood: {
         label: 'lyr_fastfood',
         color: '#b18000',
-        icon:  '🍔',
+        icon: '🍔',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
   node(${bbStr(bb)})["amenity"="fast_food"];
@@ -370,7 +369,7 @@ out center bb tags;`,
     airfields: {
         label: 'lyr_airfields',
         color: '#94a3b8',
-        icon:  '🛩️',
+        icon: '🛩️',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
   node(${bbStr(bb)})["aeroway"="aerodrome"][!"iata"]["military"!="airfield"];
@@ -384,7 +383,7 @@ out center bb tags;`,
     museum: {
         label: 'lyr_museum',
         color: '#ba7e00',
-        icon:  '🏛️',
+        icon: '🏛️',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
   node(${bbStr(bb)})["tourism"="museum"];
@@ -398,7 +397,7 @@ out center bb tags;`,
     amusementpark: {
         label: 'lyr_amusementpark',
         color: '#db2777',
-        icon:  '🎡',
+        icon: '🎡',
         buildQuery: (bb) => `[out:json][timeout:60];
 (
   node(${bbStr(bb)})["leisure"="amusement_park"];
@@ -411,8 +410,8 @@ out center bb tags;`,
 };
 
 // ── Layer state ───────────────────────────────────────────────────────────────
-let activeLayers    = {};
-const layerDataCache = {};  // id → last Overpass response (used for re-colour without re-fetch)
+let activeLayers = {};
+const layerDataCache = {}; // id → last Overpass response (used for re-colour without re-fetch)
 
 // ── Toggle layer on/off ───────────────────────────────────────────────────────
 async function toggleLayer(id, enabled) {
@@ -431,7 +430,7 @@ async function toggleLayer(id, enabled) {
 async function loadLayer(id) {
     if (!currentCity) return;
 
-    const def   = LAYER_DEFS[id];
+    const def = LAYER_DEFS[id];
     if (!def) return;
 
     const cntEl = document.getElementById('cnt-' + id);
@@ -439,13 +438,13 @@ async function loadLayer(id) {
     setStatus(tf('status_loading', t(def.label)), 'loading');
 
     try {
-        const query        = def.buildQuery(currentCity.bbox);
-        const data         = await overpassFetch(query);
+        const query = def.buildQuery(currentCity.bbox);
+        const data = await overpassFetch(query);
         layerDataCache[id] = data;
         removeLayer(id);
         const leafletLayers = def.render(id, data, def);
-        activeLayers[id]   = leafletLayers;
-        leafletLayers.forEach(l => l.addTo(map));
+        activeLayers[id] = leafletLayers;
+        leafletLayers.forEach((l) => l.addTo(map));
 
         const n = data.elements?.length ?? 0;
         if (cntEl) cntEl.textContent = n > 0 ? `(${n})` : '';
@@ -461,7 +460,7 @@ async function loadLayer(id) {
 // ── Remove a single layer ─────────────────────────────────────────────────────
 function removeLayer(id) {
     if (activeLayers[id]) {
-        activeLayers[id].forEach(l => map.removeLayer(l));
+        activeLayers[id].forEach((l) => map.removeLayer(l));
         delete activeLayers[id];
     }
     const cntEl = document.getElementById('cnt-' + id);
@@ -474,14 +473,14 @@ function recolorActiveLayers() {
     Object.entries(theme.layers).forEach(([id, color]) => {
         if (LAYER_DEFS[id]) LAYER_DEFS[id].color = color;
     });
-    Object.keys(activeLayers).forEach(id => {
+    Object.keys(activeLayers).forEach((id) => {
         const cached = layerDataCache[id];
         if (!cached) return;
-        activeLayers[id].forEach(l => map.removeLayer(l));
+        activeLayers[id].forEach((l) => map.removeLayer(l));
         delete activeLayers[id];
         const leafletLayers = LAYER_DEFS[id].render(id, cached, LAYER_DEFS[id]);
         activeLayers[id] = leafletLayers;
-        leafletLayers.forEach(l => l.addTo(map));
+        leafletLayers.forEach((l) => l.addTo(map));
     });
     updateLayerDots();
 }
@@ -500,7 +499,7 @@ function updateLayerDots() {
 // ── Remove all layers ─────────────────────────────────────────────────────────
 function clearAllLayers() {
     Object.keys(activeLayers).forEach(removeLayer);
-    document.querySelectorAll('[id^="lyr-"]').forEach(cb => cb.checked = false);
+    document.querySelectorAll('[id^="lyr-"]').forEach((cb) => (cb.checked = false));
     updatePermalink();
     updateLayerFabBadge();
 }

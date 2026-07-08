@@ -15,14 +15,14 @@
 
 **22 toggleable layers** across three categories:
 
-| Category | Layers |
-| --- | --- |
-| City overview | City boundary, Postal codes |
-| Transport | Train & tram stations, Bus stops |
+| Category          | Layers                                                                       |
+| ----------------- | ---------------------------------------------------------------------------- |
+| City overview     | City boundary, Postal codes                                                  |
+| Transport         | Train & tram stations, Bus stops                                             |
 | Emergency & civic | Hospitals, Police stations, Fire stations, Town halls, Embassies, Consulates |
-| Culture & leisure | Attractions, Cinemas, Zoos, Aquariums, Libraries, Golf courses, Stadiums |
-| Nature & amenity | Parks, Water bodies, Cemeteries, Swimming pools |
-| Commerce | Shopping centres |
+| Culture & leisure | Attractions, Cinemas, Zoos, Aquariums, Libraries, Golf courses, Stadiums     |
+| Nature & amenity  | Parks, Water bodies, Cemeteries, Swimming pools                              |
+| Commerce          | Shopping centres                                                             |
 
 Clicking any **bus stop** shows a popup listing every bus line that serves it – fetched live from OpenStreetMap:
 
@@ -34,7 +34,7 @@ Toggle the **Stadtgrenze / City Boundary** layer to draw the administrative outl
 
 ### Bus route lines
 
-Draw any bus (or tram) line by number directly on the map. Type a line number such as **305** in the *Bus-Linien* section and click *Einzeichnen* – the full route appears as a coloured line. Multiple lines can be shown at once, each with its own colour.
+Draw any bus (or tram) line by number directly on the map. Type a line number such as **305** in the _Bus-Linien_ section and click _Einzeichnen_ – the full route appears as a coloured line. Multiple lines can be shown at once, each with its own colour.
 
 ### Radius & interval tool
 
@@ -46,12 +46,12 @@ Draw a circle of any radius around a chosen centre point – or a set of evenly-
 
 Click two points (A then B) to compare their administrative hierarchy across four game-relevant levels:
 
-| Level | Fields checked |
-| --- | --- |
-| 1. Neighbourhood | neighbourhood, suburb, quarter, hamlet |
-| 2. City | city\_district, city, town, village, municipality |
-| 3. County | county, district, state\_district |
-| 4. State | state, province, region |
+| Level            | Fields checked                                    |
+| ---------------- | ------------------------------------------------- |
+| 1. Neighbourhood | neighbourhood, suburb, quarter, hamlet            |
+| 2. City          | city\_district, city, town, village, municipality |
+| 3. County        | county, district, state\_district                 |
+| 4. State         | state, province, region                           |
 
 Each level is marked **✓** (same division), **✗** (different), or **–** (not applicable). Both points are reverse-geocoded via Nominatim, and the map highlights:
 
@@ -60,7 +60,7 @@ Each level is marked **✓** (same division), **✗** (different), or **–** (n
 
 ### Tentacle questions
 
-The *Questions* panel lets you define **Tentacle** questions – the canonical Hide & Seek mechanic where a player is asked "are you in the Voronoi cell of POI X?"
+The _Questions_ panel lets you define **Tentacle** questions – the canonical Hide & Seek mechanic where a player is asked "are you in the Voronoi cell of POI X?"
 
 Set a radius, choose a POI type (hospitals, museums, train stations, …), click the 📍 button to place the centre point on the map, then pick the specific POI from the dropdown. The map shows:
 
@@ -102,15 +102,15 @@ English and German, auto-detected from browser locale. Switch at any time with t
 
 ## Tech Stack
 
-| What | Library / API |
-| --- | --- |
-| Map rendering | [Leaflet 1.9](https://leafletjs.com/) |
-| Map tiles | OpenStreetMap, CARTO, Esri, memomaps |
+| What             | Library / API                                                       |
+| ---------------- | ------------------------------------------------------------------- |
+| Map rendering    | [Leaflet 1.9](https://leafletjs.com/)                               |
+| Map tiles        | OpenStreetMap, CARTO, Esri, memomaps                                |
 | POI & route data | [Overpass API](https://overpass-api.de/) (with 3-endpoint fallback) |
-| Geocoding | [Nominatim](https://nominatim.openstreetmap.org/) |
-| OSM → GeoJSON | [osmtogeojson](https://github.com/tyrasd/osmtogeojson) |
-| Spatial analysis | [Turf.js 6](https://turfjs.org/) (Voronoi + geodesic projection) |
-| Languages | Plain JS objects (`langs/de.js`, `langs/en.js`) |
+| Geocoding        | [Nominatim](https://nominatim.openstreetmap.org/)                   |
+| OSM → GeoJSON    | [osmtogeojson](https://github.com/tyrasd/osmtogeojson)              |
+| Spatial analysis | [Turf.js 6](https://turfjs.org/) (Voronoi + geodesic projection)    |
+| Languages        | Plain JS objects (`langs/de.js`, `langs/en.js`)                     |
 
 No build step, no bundler, no framework. Just HTML + CSS + vanilla JS.
 
@@ -187,21 +187,21 @@ Each layer is a single object in `LAYER_DEFS` inside `js/layers.js`. To add one:
 
 2. Add an entry to `LAYER_DEFS`:
 
-    ```js
-    // js/layers.js
-    my_layer: {
-        label: 'lyr_my_layer',       // translation key
-        color: '#a855f7',            // marker / polygon colour
-        icon:  '🏪',                 // emoji shown in popups
-        buildQuery: (bb) => `[out:json][timeout:60];
-    (
-      node(${bb[0]},${bb[2]},${bb[1]},${bb[3]})["amenity"="my_tag"];
-      way(${bb[0]},${bb[2]},${bb[1]},${bb[3]})["amenity"="my_tag"];
-    );
-    out center bb tags;`,
-        render: renderPOIs,          // use renderPOIs for point features
-    },
-    ```
+   ```js
+   // js/layers.js
+   my_layer: {
+       label: 'lyr_my_layer',       // translation key
+       color: '#a855f7',            // marker / polygon colour
+       icon:  '🏪',                 // emoji shown in popups
+       buildQuery: (bb) => `[out:json][timeout:60];
+   (
+     node(${bb[0]},${bb[2]},${bb[1]},${bb[3]})["amenity"="my_tag"];
+     way(${bb[0]},${bb[2]},${bb[1]},${bb[3]})["amenity"="my_tag"];
+   );
+   out center bb tags;`,
+       render: renderPOIs,          // use renderPOIs for point features
+   },
+   ```
 
 3. Add a checkbox to `index.html` (copy any existing `<label class="layer-row">` block).
 

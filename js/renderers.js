@@ -13,18 +13,18 @@ function renderCityBoundary(id, data, def) {
         return result;
     }
 
-    geojson.features.forEach(feat => {
+    geojson.features.forEach((feat) => {
         const gtype = feat.geometry?.type;
         if (!gtype || !gtype.includes('Polygon')) return;
 
         const name = feat.properties?.name ?? currentCity?.name?.split(',')[0] ?? '';
         const poly = L.geoJSON(feat, {
             style: {
-                color:       def.color,
-                weight:      4,
-                opacity:     0.9,
+                color: def.color,
+                weight: 4,
+                opacity: 0.9,
                 fillOpacity: 0,
-                dashArray:   '12 7',
+                dashArray: '12 7',
             },
         });
         if (name) poly.bindPopup(`<div class="popup-name">🏙️ ${esc(name)}</div>`);
@@ -47,37 +47,44 @@ function renderPLZ(id, data, def) {
     }
 
     let ci = 0;
-    geojson.features.forEach(feat => {
+    geojson.features.forEach((feat) => {
         const gtype = feat.geometry?.type;
         if (!gtype || !gtype.includes('Polygon')) return;
 
-        const plz = feat.properties?.postal_code
-            ?? feat.properties?.['addr:postcode']
-            ?? feat.properties?.name
-            ?? '?';
+        const plz =
+            feat.properties?.postal_code ??
+            feat.properties?.['addr:postcode'] ??
+            feat.properties?.name ??
+            '?';
         const color = PLZ_COLORS[ci++ % PLZ_COLORS.length];
 
         const poly = L.geoJSON(feat, {
             style: { color, fillColor: color, fillOpacity: 0.18, weight: 2, opacity: 0.85 },
         });
-        poly.on('mouseover', function () { this.setStyle({ fillOpacity: 0.45 }); });
-        poly.on('mouseout',  function () { this.setStyle({ fillOpacity: 0.18 }); });
+        poly.on('mouseover', function () {
+            this.setStyle({ fillOpacity: 0.45 });
+        });
+        poly.on('mouseout', function () {
+            this.setStyle({ fillOpacity: 0.18 });
+        });
         poly.bindPopup(`<div class="popup-name">${tf('plz_label', plz)}</div>`);
         result.push(poly);
 
         try {
             const bounds = poly.getBounds();
             if (bounds.isValid()) {
-                result.push(L.marker(bounds.getCenter(), {
-                    icon: L.divIcon({
-                        className: 'plz-label',
-                        html:       plz,
-                        iconSize:   [60, 20],
-                        iconAnchor: [30, 10],
+                result.push(
+                    L.marker(bounds.getCenter(), {
+                        icon: L.divIcon({
+                            className: 'plz-label',
+                            html: plz,
+                            iconSize: [60, 20],
+                            iconAnchor: [30, 10],
+                        }),
+                        interactive: false,
+                        zIndexOffset: 100,
                     }),
-                    interactive:  false,
-                    zIndexOffset: 100,
-                }));
+                );
             }
         } catch (_) {}
     });
@@ -90,13 +97,13 @@ function renderPLZ(id, data, def) {
 function deduplicateNearby(elements, maxMeters) {
     const threshold = maxMeters * maxMeters;
     const placed = [];
-    return elements.filter(el => {
+    return elements.filter((el) => {
         const lat = el.lat ?? el.center?.lat;
         const lng = el.lon ?? el.center?.lon;
         if (lat == null) return true;
         const close = placed.some(([plat, plng]) => {
             const dlat = (lat - plat) * 111320;
-            const dlng = (lng - plng) * 111320 * Math.cos(plat * Math.PI / 180);
+            const dlng = (lng - plng) * 111320 * Math.cos((plat * Math.PI) / 180);
             return dlat * dlat + dlng * dlng < threshold;
         });
         if (!close) placed.push([lat, lng]);
@@ -107,12 +114,13 @@ function deduplicateNearby(elements, maxMeters) {
 // ── POI points (hospitals, train stations, …) ────────────────────────────────
 // Draws each OSM node/way/relation as a coloured CircleMarker.
 function getElementCenter(el) {
-    if (el.type === 'node') return { lat: el.lat,        lng: el.lon };
-    if (el.center)          return { lat: el.center.lat, lng: el.center.lon };
-    if (el.bounds)          return {
-        lat: (el.bounds.minlat + el.bounds.maxlat) / 2,
-        lng: (el.bounds.minlon + el.bounds.maxlon) / 2,
-    };
+    if (el.type === 'node') return { lat: el.lat, lng: el.lon };
+    if (el.center) return { lat: el.center.lat, lng: el.center.lon };
+    if (el.bounds)
+        return {
+            lat: (el.bounds.minlat + el.bounds.maxlat) / 2,
+            lng: (el.bounds.minlon + el.bounds.maxlon) / 2,
+        };
     return null;
 }
 
@@ -121,24 +129,30 @@ function renderPOIs(id, data, def) {
 
     let elements = data.elements ?? [];
 
-    if (id === 'busstops')     elements = deduplicateNearby(elements, 50);
+    if (id === 'busstops') elements = deduplicateNearby(elements, 50);
     if (id === 'swimmingpool') elements = deduplicateNearby(elements, 80);
 
-    elements.forEach(el => {
+    elements.forEach((el) => {
         const center = getElementCenter(el);
         if (!center) return;
         const { lat, lng } = center;
 
         const name = el.tags?.name ?? el.tags?.['name:de'] ?? t(def.label);
-        const type = el.tags?.amenity  ?? el.tags?.railway  ?? el.tags?.tourism
-                  ?? el.tags?.leisure  ?? el.tags?.historic ?? el.tags?.shop ?? '';
+        const type =
+            el.tags?.amenity ??
+            el.tags?.railway ??
+            el.tags?.tourism ??
+            el.tags?.leisure ??
+            el.tags?.historic ??
+            el.tags?.shop ??
+            '';
 
         const marker = L.circleMarker([lat, lng], {
-            radius:      8,
-            fillColor:   def.color,
-            color:       '#fff',
-            weight:      2,
-            opacity:     1,
+            radius: 8,
+            fillColor: def.color,
+            color: '#fff',
+            weight: 2,
+            opacity: 1,
             fillOpacity: 0.9,
             ...(def.markerOpts ?? {}),
         });
@@ -149,10 +163,11 @@ function renderPOIs(id, data, def) {
             <div class="popup-coords">${lat.toFixed(5)}, ${lng.toFixed(5)}</div>`;
 
         if (id === 'busstops' && el.id) {
-            let fetched  = false;
+            let fetched = false;
             let fetching = false;
             marker.bindPopup(
-                baseHtml() + `<div class="popup-routes"><div class="popup-routes-loading"><div class="popup-spinner"></div>${t('stop_lines_loading')}</div></div>`
+                baseHtml() +
+                    `<div class="popup-routes"><div class="popup-routes-loading"><div class="popup-spinner"></div>${t('stop_lines_loading')}</div></div>`,
             );
             marker.on('popupopen', async () => {
                 if (fetched || fetching) return;
@@ -162,20 +177,25 @@ function renderPOIs(id, data, def) {
                         `[out:json][timeout:30];
 (\n  node(${el.id});\n  node(around:80,${lat},${lng})["public_transport"~"^(stop_position|platform)$"];\n);
 relation(bn)["route"~"^(bus|tram|trolleybus|subway|light_rail)$"];
-out tags;`
+out tags;`,
                     );
-                    const refs = [...new Set(
-                        (d.elements ?? []).filter(r => r.tags?.ref).map(r => r.tags.ref)
-                    )].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+                    const refs = [
+                        ...new Set(
+                            (d.elements ?? []).filter((r) => r.tags?.ref).map((r) => r.tags.ref),
+                        ),
+                    ].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
 
                     const inner = refs.length
-                        ? refs.map(r => `<span class="route-chip">${esc(r)}</span>`).join('')
+                        ? refs.map((r) => `<span class="route-chip">${esc(r)}</span>`).join('')
                         : `<span style="color:#484f58;font-size:11px">${t('stop_lines_none')}</span>`;
 
                     marker.setPopupContent(baseHtml() + `<div class="popup-routes">${inner}</div>`);
                     fetched = true;
                 } catch (_) {
-                    marker.setPopupContent(baseHtml() + `<div class="popup-routes"><span style="color:#f85149;font-size:11px">${t('stop_lines_error')}</span></div>`);
+                    marker.setPopupContent(
+                        baseHtml() +
+                            `<div class="popup-routes"><span style="color:#f85149;font-size:11px">${t('stop_lines_error')}</span></div>`,
+                    );
                     fetched = true;
                 } finally {
                     fetching = false;
@@ -201,11 +221,11 @@ out tags;`
 // Renders natural=coastline ways as polylines using the raw Overpass geometry.
 function renderCoastline(id, data, def) {
     const result = [];
-    (data.elements ?? []).forEach(el => {
+    (data.elements ?? []).forEach((el) => {
         if (el.type !== 'way' || !el.geometry?.length) return;
         const line = L.polyline(
-            el.geometry.map(n => [n.lat, n.lon]),
-            { color: def.color, weight: 4.5, opacity: 1.0 }
+            el.geometry.map((n) => [n.lat, n.lon]),
+            { color: def.color, weight: 4.5, opacity: 1.0 },
         );
         if (el.tags?.name) line.bindPopup(`<div class="popup-name">🏖️ ${esc(el.tags.name)}</div>`);
         result.push(line);
@@ -225,13 +245,19 @@ function renderWater(id, data, def) {
         return result;
     }
 
-    geojson.features.forEach(feat => {
+    geojson.features.forEach((feat) => {
         const gtype = feat.geometry?.type;
         if (!gtype || !gtype.includes('Polygon')) return;
 
         const name = feat.properties?.name ?? '';
         const poly = L.geoJSON(feat, {
-            style: { color: '#0369a1', fillColor: def.color, fillOpacity: 0.35, weight: 2.5, opacity: 1 },
+            style: {
+                color: '#0369a1',
+                fillColor: def.color,
+                fillOpacity: 0.35,
+                weight: 2.5,
+                opacity: 1,
+            },
         });
         if (name) poly.bindPopup(`<div class="popup-name">💧 ${esc(name)}</div>`);
         result.push(poly);

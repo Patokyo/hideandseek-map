@@ -6,19 +6,33 @@ let currentCity = null;
 // ── Unit system (metric | imperial) ──────────────────────────────────────────
 let units = 'metric';
 
-function toKm(v)         { return units === 'imperial' ? v * KM_PER_MILE : v; }
-function fromKm(km)      { return units === 'imperial' ? km / KM_PER_MILE : km; }
-function unitStr()       { return units === 'imperial' ? 'mi' : 'km'; }
-function fmtDist(km)     { const v = fromKm(km); return `${v % 1 === 0 ? v : v.toFixed(2)} ${unitStr()}`; }
-function fmtDistShort(km){ const v = fromKm(km); return `${v % 1 === 0 ? v : v.toFixed(1)} ${unitStr()}`; }
-function fmtNearDist(km)  { return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(2)} km`; }
+function toKm(v) {
+    return units === 'imperial' ? v * KM_PER_MILE : v;
+}
+function fromKm(km) {
+    return units === 'imperial' ? km / KM_PER_MILE : km;
+}
+function unitStr() {
+    return units === 'imperial' ? 'mi' : 'km';
+}
+function fmtDist(km) {
+    const v = fromKm(km);
+    return `${v % 1 === 0 ? v : v.toFixed(2)} ${unitStr()}`;
+}
+function fmtDistShort(km) {
+    const v = fromKm(km);
+    return `${v % 1 === 0 ? v : v.toFixed(1)} ${unitStr()}`;
+}
+function fmtNearDist(km) {
+    return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(2)} km`;
+}
 
 function setUnits(u) {
     units = u;
-    document.getElementById('unitKm').className        = u === 'metric'   ? '' : 'ghost';
-    document.getElementById('unitMi').className        = u === 'imperial' ? '' : 'ghost';
+    document.getElementById('unitKm').className = u === 'metric' ? '' : 'ghost';
+    document.getElementById('unitMi').className = u === 'imperial' ? '' : 'ghost';
     document.getElementById('unitLabelRadius').textContent = tf('lbl_radius', unitStr());
-    document.getElementById('unitLabelStep').textContent   = tf('lbl_step',   unitStr());
+    document.getElementById('unitLabelStep').textContent = tf('lbl_step', unitStr());
     updatePermalink();
 }
 
@@ -30,10 +44,14 @@ async function searchCity() {
     setStatus(t('status_searching'), 'loading');
 
     try {
-        const res  = await fetch(
-            'https://nominatim.openstreetmap.org/search?' + new URLSearchParams({
-                q: name, format: 'json', limit: 5, addressdetails: 1,
-            })
+        const res = await fetch(
+            'https://nominatim.openstreetmap.org/search?' +
+                new URLSearchParams({
+                    q: name,
+                    format: 'json',
+                    limit: 5,
+                    addressdetails: 1,
+                }),
         );
         const data = await res.json();
 
@@ -42,17 +60,17 @@ async function searchCity() {
             return;
         }
 
-        const best = data.find(r =>
-            ['city', 'town', 'municipality'].includes(r.addresstype ?? r.type)
-        ) ?? data[0];
+        const best =
+            data.find((r) => ['city', 'town', 'municipality'].includes(r.addresstype ?? r.type)) ??
+            data[0];
 
         currentCity = {
-            name:     best.display_name,
-            lat:      parseFloat(best.lat),
-            lng:      parseFloat(best.lon),
-            bbox:     best.boundingbox.map(parseFloat),
+            name: best.display_name,
+            lat: parseFloat(best.lat),
+            lng: parseFloat(best.lon),
+            bbox: best.boundingbox.map(parseFloat),
             osm_type: best.osm_type,
-            osm_id:   best.osm_id,
+            osm_id: best.osm_id,
         };
 
         document.getElementById('cityHint').textContent = best.display_name;
