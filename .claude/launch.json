@@ -3,9 +3,10 @@
   "configurations": [
     {
       "name": "hideandseek-map",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["serve", "-l", "5500", "."],
-      "port": 5500
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "npx serve -l ${PORT:-5500} ."],
+      "port": 5500,
+      "autoPort": true
     }
   ]
 }

@@ -1,5 +1,13 @@
 const CHANGELOG = [
     {
+        date: '2026-07-09',
+        text: "Station Name Length checker: mark stations whose name length matches the hiders' answer",
+    },
+    {
+        date: '2026-07-09',
+        text: 'Live location: show your real position on the map (🎯 button)',
+    },
+    {
         date: '2026-07-08',
         text: 'many small changes, better support for small devices. Clear all feature.',
     },

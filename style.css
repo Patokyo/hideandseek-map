@@ -532,7 +532,8 @@ button.meas-active:hover {
 #styleFab,
 #boundaryFab,
 #permalinkFab,
-#layerFab {
+#layerFab,
+#locateFab {
     position: fixed;
     right: 12px;
     z-index: 1200;
@@ -566,13 +567,22 @@ button.meas-active:hover {
 #layerFab {
     bottom: 246px;
 }
+#locateFab {
+    bottom: 300px;
+}
 #printFab:hover,
 #styleFab:hover,
 #boundaryFab:hover,
 #permalinkFab:hover,
-#layerFab:hover {
+#layerFab:hover,
+#locateFab:hover {
     background: #21262d;
     color: #fff;
+}
+#locateFab.geo-active {
+    background: rgba(34, 137, 255, 0.12);
+    border-color: #2289ff;
+    color: #2289ff;
 }
 #layerFab.lp-active {
     background: rgba(240, 136, 62, 0.12);
@@ -767,6 +777,7 @@ button.meas-active:hover {
     #styleFab,
     #stylePopover,
     #layerFab,
+    #locateFab,
     #layerPanel {
         display: none !important;
     }
@@ -1193,6 +1204,46 @@ button.meas-active:hover {
 }
 .nc-pb {
     color: #58a6ff;
+}
+
+/* ── Station name length checker ─────────────────── */
+.sl-list {
+    max-height: 220px;
+    overflow-y: auto;
+    margin-top: 4px;
+    background: #0d1117;
+    border: 1px solid #21262d;
+    border-radius: 6px;
+    padding: 2px 7px;
+}
+.sl-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 0;
+    border-bottom: 1px solid #21262d;
+    font-size: 12px;
+    color: #c9d1d9;
+}
+.sl-item:last-child {
+    border-bottom: none;
+}
+.sl-nm {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.sl-len {
+    color: #484f58;
+    font-size: 10px;
+    flex-shrink: 0;
+}
+.sl-more {
+    padding: 4px 0;
+    font-size: 11px;
+    color: #484f58;
+    text-align: center;
 }
 
 /* ── Changelog ───────────────────────────────────── */

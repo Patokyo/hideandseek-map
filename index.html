@@ -429,6 +429,70 @@
         </details>
       </div>
 
+      <!-- Station Name Length -->
+      <div class="section">
+        <details class="layers-details">
+          <summary class="section-title" data-i18n="sec_stationlen">Station Name Length</summary>
+          <div
+            style="font-size: 11px; color: #484f58; margin: 6px 0 8px"
+            data-i18n="stationlen_hint"
+          >
+            "Our station's name has N characters – yours too?" Spaces and hyphens count.
+          </div>
+          <div class="row" style="align-items: center">
+            <input
+              type="number"
+              id="slLen"
+              min="1"
+              max="99"
+              step="1"
+              placeholder="8"
+              style="max-width: 70px"
+            />
+            <span style="color: #8b949e; font-size: 12px" data-i18n="sl_chars">characters</span>
+          </div>
+          <div style="display: flex; gap: 4px; align-items: center; margin: 8px 0">
+            <span style="color: #8b949e; font-size: 12px; white-space: nowrap" data-i18n="sl_answer"
+              >Answer:</span
+            >
+            <button
+              id="slAnsYes"
+              style="flex: 1; font-size: 12px"
+              onclick="setSlAnswer(true)"
+              data-i18n="sl_yes"
+            >
+              Yes
+            </button>
+            <button
+              id="slAnsNo"
+              class="ghost"
+              style="flex: 1; font-size: 12px"
+              onclick="setSlAnswer(false)"
+              data-i18n="sl_no"
+            >
+              No
+            </button>
+          </div>
+          <button
+            id="slBtn"
+            style="width: 100%; margin-bottom: 4px"
+            onclick="runStationLengthCheck()"
+            data-i18n="btn_sl_start"
+          >
+            Check
+          </button>
+          <div id="slResult"></div>
+          <button
+            class="ghost"
+            style="width: 100%; margin-top: 6px"
+            onclick="clearStationLength()"
+            data-i18n="btn_sl_clear"
+          >
+            Clear
+          </button>
+        </details>
+      </div>
+
       <!-- Questions / Tentacles -->
       <div class="section">
         <details class="layers-details">
@@ -666,6 +730,17 @@
       aria-label="Copy link"
     >
       🔗
+    </button>
+
+    <!-- ════════ LOCATE FAB ════════ -->
+    <button
+      id="locateFab"
+      onclick="toggleGeolocate()"
+      data-i18n-title="fab_locate_title"
+      title="Show my location"
+      aria-label="Show my location"
+    >
+      🎯
     </button>
 
     <!-- ════════ LAYER FAB ════════ -->
@@ -1074,7 +1149,11 @@
     <!-- nearest POI distances                  -->
     <script src="js/nearestchecker.js"></script>
     <!-- same-nearest POI checker              -->
+    <script src="js/stationlength.js"></script>
+    <!-- station name length checker           -->
     <script src="js/ui.js"></script>
+
+    <script src="js/geolocate.js"></script>
     <!-- sidebar, print, error popup, helpers        -->
     <script src="js/tentacles.js"></script>
     <!-- tentacle Voronoi questions                   -->

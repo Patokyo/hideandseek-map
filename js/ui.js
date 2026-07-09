@@ -62,6 +62,7 @@ function clearAll() {
     clearMeasure();
     clearAdminCheck();
     clearNearestChecker();
+    clearStationLength();
     clearNearestPOI();
     clearAllTentacles();
     clearAllBusRoutes();
