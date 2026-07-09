@@ -36,18 +36,24 @@ function renderCityBoundary(id, data, def) {
 
 // ── Postal-code polygons ──────────────────────────────────────────────────────
 // Converts OSM relations to coloured GeoJSON areas with postal-code labels.
+// Also accepts ready-made GeoJSON features ({ source: 'geojson', elements })
+// from a fetchFallback such as the swisstopo postal-code service.
 function renderPLZ(id, data, def) {
     const result = [];
-    let geojson;
-    try {
-        geojson = osmtogeojson(data);
-    } catch (e) {
-        console.error('osmtogeojson failed', e);
-        return result;
+    let features;
+    if (data.source === 'geojson') {
+        features = data.elements;
+    } else {
+        try {
+            features = osmtogeojson(data).features;
+        } catch (e) {
+            console.error('osmtogeojson failed', e);
+            return result;
+        }
     }
 
     let ci = 0;
-    geojson.features.forEach((feat) => {
+    features.forEach((feat) => {
         const gtype = feat.geometry?.type;
         if (!gtype || !gtype.includes('Polygon')) return;
 
@@ -67,7 +73,15 @@ function renderPLZ(id, data, def) {
         poly.on('mouseout', function () {
             this.setStyle({ fillOpacity: 0.18 });
         });
-        poly.bindPopup(`<div class="popup-name">${tf('plz_label', plz)}</div>`);
+        const plzName = feat.properties?.name;
+        const plzAttr = feat.properties?.attribution;
+        poly.bindPopup(
+            `<div class="popup-name">${tf('plz_label', plz)}</div>` +
+                (plzName && String(plzName) !== String(plz)
+                    ? `<div class="popup-type">${esc(plzName)}</div>`
+                    : '') +
+                (plzAttr ? `<div class="popup-coords">${esc(plzAttr)}</div>` : ''),
+        );
         result.push(poly);
 
         try {

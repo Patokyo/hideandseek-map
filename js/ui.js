@@ -63,6 +63,7 @@ function clearAll() {
     clearAdminCheck();
     clearNearestChecker();
     clearStationLength();
+    clearGameZone();
     clearNearestPOI();
     clearAllTentacles();
     clearAllBusRoutes();

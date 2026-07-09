@@ -9,6 +9,93 @@
 // makes it obvious what the four numbers mean.
 const bbStr = (bb) => `${bb[0]},${bb[2]},${bb[1]},${bb[3]}`;
 
+// ── Postal-code fallbacks (official open data where OSM has no polygons) ─────
+// OSM only carries boundary=postal_code relations in some countries (esp.
+// Germany). For others we fall back to official sources, picked by where the
+// city's bounding box lies. All return the { source: 'geojson', elements }
+// shape that renderPLZ consumes.
+
+// bb / box are [south, north, west, east] (Nominatim order)
+function bboxIntersects(bb, box) {
+    return bb[0] <= box[1] && bb[1] >= box[0] && bb[2] <= box[3] && bb[3] >= box[2];
+}
+
+async function fetchPLZFallback(bb) {
+    // Switzerland + Liechtenstein → swisstopo
+    if (bboxIntersects(bb, [45.7, 47.9, 5.9, 10.6])) return fetchSwissPLZ(bb);
+    // USA: contiguous states, Alaska, Hawaii → Census Bureau ZCTAs
+    if (
+        bboxIntersects(bb, [24.4, 49.5, -125.0, -66.9]) ||
+        bboxIntersects(bb, [51.0, 71.5, -180.0, -129.9]) ||
+        bboxIntersects(bb, [18.8, 22.5, -160.3, -154.7])
+    ) {
+        return fetchUSZCTA(bb);
+    }
+    return { source: 'geojson', elements: [] };
+}
+
+// Swiss postal-code perimeters (swisstopo / GeoAdmin open data)
+async function fetchSwissPLZ(bb) {
+    // bb = [south, north, west, east] (Nominatim order) → envelope xmin,ymin,xmax,ymax
+    const res = await fetch(
+        'https://api3.geo.admin.ch/rest/services/api/MapServer/identify?' +
+            new URLSearchParams({
+                geometryType: 'esriGeometryEnvelope',
+                geometry: `${bb[2]},${bb[0]},${bb[3]},${bb[1]}`,
+                layers: 'all:ch.swisstopo-vd.ortschaftenverzeichnis_plz',
+                tolerance: 0,
+                returnGeometry: true,
+                geometryFormat: 'geojson',
+                sr: 4326,
+            }),
+    );
+    if (!res.ok) throw new Error(`GeoAdmin HTTP ${res.status}`);
+    const data = await res.json();
+    const elements = (data.results ?? []).map((f) => ({
+        type: 'Feature',
+        geometry: f.geometry,
+        properties: {
+            postal_code: String(f.properties?.plz ?? '?'),
+            name: f.properties?.langtext ?? '',
+            attribution: '© swisstopo',
+        },
+    }));
+    return { source: 'geojson', elements };
+}
+
+// US ZIP Code Tabulation Areas (Census Bureau TIGERweb).
+// ZCTAs are the Census Bureau's polygon approximation of USPS ZIP codes.
+// maxAllowableOffset simplifies the very detailed TIGER geometries (~20 m),
+// which shrinks responses by more than 10×.
+async function fetchUSZCTA(bb) {
+    const res = await fetch(
+        'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/PUMA_TAD_TAZ_UGA_ZCTA/MapServer/1/query?' +
+            new URLSearchParams({
+                geometry: `${bb[2]},${bb[0]},${bb[3]},${bb[1]}`,
+                geometryType: 'esriGeometryEnvelope',
+                inSR: 4326,
+                spatialRel: 'esriSpatialRelIntersects',
+                outFields: 'ZCTA5',
+                returnGeometry: true,
+                outSR: 4326,
+                maxAllowableOffset: 0.0002,
+                geometryPrecision: 5,
+                f: 'geojson',
+            }),
+    );
+    if (!res.ok) throw new Error(`TIGERweb HTTP ${res.status}`);
+    const data = await res.json();
+    const elements = (data.features ?? []).map((f) => ({
+        type: 'Feature',
+        geometry: f.geometry,
+        properties: {
+            postal_code: String(f.properties?.ZCTA5 ?? '?'),
+            attribution: '© US Census Bureau',
+        },
+    }));
+    return { source: 'geojson', elements };
+}
+
 // ════════════════════════════════════════════════════════════════════════════════
 // POI LAYER DEFINITIONS
 // Each entry describes one layer:
@@ -45,6 +132,9 @@ out geom;`;
         buildQuery: (bb) => `[out:json][timeout:90];
 relation(${bbStr(bb)})["boundary"="postal_code"];
 out geom;`,
+        // OSM only has postal-code polygons for some countries (esp. Germany).
+        // Elsewhere official open data fills the gap (see fetchPLZFallback).
+        fetchFallback: fetchPLZFallback,
         render: renderPLZ,
     },
 
@@ -439,7 +529,14 @@ async function loadLayer(id) {
 
     try {
         const query = def.buildQuery(currentCity.bbox);
-        const data = await overpassFetch(query);
+        let data = await overpassFetch(query);
+
+        // OSM has no data here → try the layer's alternative source (e.g. the
+        // swisstopo postal-code polygons for Switzerland)
+        if (def.fetchFallback && !data.elements?.length) {
+            data = await def.fetchFallback(currentCity.bbox);
+        }
+
         layerDataCache[id] = data;
         removeLayer(id);
         const leafletLayers = def.render(id, data, def);
@@ -448,7 +545,8 @@ async function loadLayer(id) {
 
         const n = data.elements?.length ?? 0;
         if (cntEl) cntEl.textContent = n > 0 ? `(${n})` : '';
-        setStatus(tf('status_loaded', t(def.label)), 'ok');
+        if (n > 0) setStatus(tf('status_loaded', t(def.label)), 'ok');
+        else setStatus(tf('status_layer_empty', t(def.label)), 'error');
     } catch (e) {
         if (cntEl) cntEl.textContent = '✗';
         setStatus(t('status_err_popup'), 'error');

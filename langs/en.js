@@ -171,10 +171,31 @@ const LANG_EN = {
     status_geo_locating: 'Locating …',
     status_geo_on: 'Location active (±{0} m)',
     status_geo_off: 'Location display stopped',
-    status_geo_denied: 'Location access denied – please allow it in your browser settings',
+    status_geo_denied:
+        "Location access denied – allow it for this site in the browser and check that the device's location services are enabled for the browser",
+    status_geo_insecure:
+        'Geolocation only works over HTTPS (or localhost) – please open the page via https://',
     status_geo_failed: 'Could not determine your location',
     status_geo_unsupported: 'This browser does not support geolocation',
     geo_accuracy: 'Accuracy: ±{0} m',
+    sec_gamezone: 'Game Area',
+    gz_hint:
+        'Add every allowed place one by one. Everything outside is dimmed and ignored by the checkers. Places without an OSM boundary get a radius instead.',
+    gz_placeholder: 'e.g. Wahnbek',
+    btn_gz_add: 'Add',
+    gz_radius_lbl: 'Radius if no boundary:',
+    btn_gz_clear: 'Remove game area',
+    btn_gz_draw: '✏️ Draw area',
+    btn_gz_finish: '✓ Done ({0} points)',
+    status_gz_draw: 'Click the corner points on the map (at least 3), then press "Done"',
+    status_gz_draw_cancelled: 'Drawing cancelled',
+    gz_drawn: 'Drawn area',
+    gz_drawn_name: 'Custom area {0}',
+    gz_boundary: 'OSM boundary',
+    gz_circle: '{0} km radius',
+    gz_not_found: 'Place not found',
+    gz_duplicate: 'Place is already part of the game area',
+    status_gz_added: 'Game area: {0} added',
     sec_stationlen: 'Station Name Length',
     stationlen_hint:
         '"Our station\'s name has N characters – yours too?" Spaces and hyphens count, and so do words like "Station".',
@@ -197,6 +218,7 @@ const LANG_EN = {
     sl_summary: '✅ {0} possible · ❌ {1} eliminated',
     sl_more: '… and {0} more',
     sl_done: 'Stations checked',
+    sl_zone_note: 'Only stations inside the game area are counted',
     sec_rq: 'Radius Questions (Yes/No)',
     rq_hint:
         '"Are you within N km of here?" – add each question with its spot, radius and yes/no answer. The map shades everything that is ruled out – the bright area is where the hider can still be.',
@@ -212,4 +234,5 @@ const LANG_EN = {
     status_rq_area: 'Possible hiding area: {0}',
     status_rq_conflict: 'Contradiction: the answers rule each other out',
     status_rq_no_geo: 'Location not active – enable the 🎯 button first',
+    status_layer_empty: '{0}: no data found for this region',
 };

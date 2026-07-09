@@ -123,6 +123,8 @@ async function runStationLengthCheck() {
             const center = getElementCenter(el);
             const name = el.tags?.name;
             if (!center || !name) continue;
+            // Stations outside the allowed game area don't count at all
+            if (!gameZoneContains(center.lat, center.lng)) continue;
 
             const n = slNameLength(name);
             const kept = slAnswerYes ? n === len : n !== len;
@@ -147,11 +149,13 @@ async function runStationLengthCheck() {
         }
 
         const summaryClass = keptNames.size > 0 ? 'part-match' : 'no-match';
-        const summary = `<div class="nc-summary ${summaryClass}">${tf(
-            'sl_summary',
-            keptNames.size,
-            elimNames.size,
-        )}</div>`;
+        const zoneNote = gameZoneActive() ? `<div class="sl-more">${t('sl_zone_note')}</div>` : '';
+        const summary =
+            `<div class="nc-summary ${summaryClass}">${tf(
+                'sl_summary',
+                keptNames.size,
+                elimNames.size,
+            )}</div>` + zoneNote;
 
         const MAX_LIST = 50;
         const items = [...keptNames.entries()].sort((a, b) => a[0].localeCompare(b[0]));

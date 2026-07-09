@@ -1,6 +1,14 @@
 const CHANGELOG = [
     {
         date: '2026-07-09',
+        text: 'Postal codes now work in Switzerland and the USA (official swisstopo / US Census boundaries as fallback where OSM has none)',
+    },
+    {
+        date: '2026-07-09',
+        text: 'Game Area: define the allowed places (OSM boundary, radius or hand-drawn polygon); everything outside is dimmed and ignored by the station checker',
+    },
+    {
+        date: '2026-07-09',
         text: 'Radius Questions: combine yes/no radius answers – the map shades out everything ruled out (donut view)',
     },
     {

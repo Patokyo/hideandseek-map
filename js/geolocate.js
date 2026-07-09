@@ -17,6 +17,15 @@ function toggleGeolocate() {
         return;
     }
 
+    // Browsers only expose geolocation in secure contexts (https:// or
+    // localhost). Over plain http:// the request fails with the same
+    // PERMISSION_DENIED code as a real user denial – catch it here so the
+    // player gets the actual reason instead of a misleading settings hint.
+    if (!window.isSecureContext) {
+        setStatus(t('status_geo_insecure'), 'error');
+        return;
+    }
+
     if (!navigator.geolocation) {
         setStatus(t('status_geo_unsupported'), 'error');
         return;

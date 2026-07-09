@@ -169,6 +169,59 @@
         <div id="cityHint" style="font-size: 11px; color: #8b949e; margin-top: 2px"></div>
       </div>
 
+      <!-- Game Zone -->
+      <div class="section">
+        <details class="layers-details">
+          <summary class="section-title" data-i18n="sec_gamezone">Game Area</summary>
+          <div style="font-size: 11px; color: #484f58; margin: 6px 0 8px" data-i18n="gz_hint">
+            Add every allowed place. Everything outside is dimmed and ignored by the checkers.
+          </div>
+          <div class="row">
+            <input
+              type="text"
+              id="gzInput"
+              data-i18n-placeholder="gz_placeholder"
+              placeholder="e.g. Wahnbek"
+            />
+            <button onclick="addGameZoneArea()" data-i18n="btn_gz_add">Add</button>
+          </div>
+          <div class="row" style="align-items: center">
+            <span
+              style="color: #8b949e; font-size: 11px; white-space: nowrap"
+              data-i18n="gz_radius_lbl"
+              >Radius if no boundary:</span
+            >
+            <input
+              type="number"
+              id="gzRadius"
+              value="2"
+              min="0.2"
+              max="50"
+              step="0.1"
+              style="max-width: 60px"
+            />
+            <span style="color: #8b949e; font-size: 11px; line-height: 28px">km</span>
+          </div>
+          <button
+            id="gzDrawBtn"
+            style="width: 100%; margin-bottom: 4px"
+            onclick="toggleGzDraw()"
+            data-i18n="btn_gz_draw"
+          >
+            Draw area
+          </button>
+          <div id="gzList"></div>
+          <button
+            class="ghost"
+            style="width: 100%; margin-top: 6px"
+            onclick="clearGameZone()"
+            data-i18n="btn_gz_clear"
+          >
+            Remove game area
+          </button>
+        </details>
+      </div>
+
       <!-- Bus Routes -->
       <div class="section">
         <details class="layers-details">
@@ -1187,6 +1240,8 @@
     <!-- boundary + admin level layers           -->
     <script src="js/city.js"></script>
     <!-- searchCity(), units (km/mi)                 -->
+    <script src="js/gamezone.js"></script>
+    <!-- allowed game area (mask + containment)      -->
     <script src="js/busroutes.js"></script>
     <!-- bus route lines                             -->
     <script src="js/radius.js"></script>
