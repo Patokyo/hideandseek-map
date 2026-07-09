@@ -67,6 +67,7 @@ function clearAll() {
     clearAllTentacles();
     clearAllBusRoutes();
     clearAllRadii();
+    clearAllRadiusQuestions();
     clearAllLayers();
     clearAllBoundaryLayers();
     if (clickMarker) {

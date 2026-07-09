@@ -1,7 +1,11 @@
 const CHANGELOG = [
     {
         date: '2026-07-09',
-        text: "Station Name Length checker: mark stations whose name length matches the hiders' answer",
+        text: 'Radius Questions: combine yes/no radius answers – the map shades out everything ruled out (donut view)',
+    },
+    {
+        date: '2026-07-09',
+        text: "Station Name Length checker: mark stations whose name length matches the hiders' answer. Station types (train, subway, tram, bus) are selectable",
     },
     {
         date: '2026-07-09',

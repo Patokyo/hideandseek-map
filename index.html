@@ -315,6 +315,33 @@
         </details>
       </div>
 
+      <!-- Radius Questions (yes/no) -->
+      <div class="section">
+        <details class="layers-details">
+          <summary class="section-title" data-i18n="sec_rq">Radius Questions (Yes/No)</summary>
+          <div style="font-size: 11px; color: #484f58; margin: 6px 0 8px" data-i18n="rq_hint">
+            "Are you within N km?" — enter each question with its yes/no answer. The map shades
+            everything that is ruled out; the bright area is where the hider can still be.
+          </div>
+          <div id="rqCards"></div>
+          <button
+            style="width: 100%; margin-top: 4px"
+            onclick="addRadiusQuestion()"
+            data-i18n="btn_add_rq"
+          >
+            + Add question
+          </button>
+          <button
+            class="ghost"
+            style="width: 100%; margin-top: 6px"
+            onclick="clearAllRadiusQuestions()"
+            data-i18n="btn_clear_rq"
+          >
+            Remove all questions
+          </button>
+        </details>
+      </div>
+
       <!-- Admin Division Checker -->
       <div class="section">
         <details class="layers-details">
@@ -1163,6 +1190,8 @@
     <script src="js/busroutes.js"></script>
     <!-- bus route lines                             -->
     <script src="js/radius.js"></script>
+
+    <script src="js/radiusquestions.js"></script>
     <!-- radius tool, clickedPoint                   -->
     <script src="js/measure.js"></script>
     <!-- distance & direction, map.on('click', …)    -->

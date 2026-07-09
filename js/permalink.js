@@ -49,6 +49,10 @@ function buildPermalink() {
     // Format: poiType,radius,unit,lat,lng,selectedPoiId (0 = none)
     tentSerialise().forEach((s) => p.append('tent', s));
 
+    // Radius questions — one `rq` param per question with a spot set
+    // Format: lat,lng,km,y|n
+    rqSerialise().forEach((s) => p.append('rq', s));
+
     return `${location.pathname}?${p.toString()}`;
 }
 
@@ -167,6 +171,9 @@ async function loadFromPermalink() {
 
     // Restore tentacle questions
     await tentRestoreFromPermalink(p.getAll('tent'));
+
+    // Restore radius questions
+    rqRestoreFromPermalink(p.getAll('rq'));
 
     // Unlock auto-updates and write the canonical URL once
     permalinkReady = true;
