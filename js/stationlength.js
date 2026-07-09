@@ -6,6 +6,16 @@
 // Station" – i.e. the full name string is measured as-is.
 // The hiders answer yes/no; matching stations stay green (possible), the rest
 // is greyed out – or the other way round when the answer is "no".
+//
+// What counts as a "station" depends on the game (bus stops in a small town,
+// train + subway in a big city), so each type is a checkbox in the sidebar.
+const SL_TYPE_FILTERS = {
+    train: '["railway"~"^(station|halt)$"]["station"!="subway"]',
+    subway: '["railway"~"^(station|halt)$"]["station"="subway"]',
+    tram: '["railway"="tram_stop"]',
+    busstation: '["amenity"="bus_station"]',
+    busstop: '["highway"="bus_stop"]',
+};
 
 let slAnswerYes = true;
 let slMarkers = [];
@@ -64,6 +74,14 @@ async function runStationLengthCheck() {
         return;
     }
 
+    const types = Object.keys(SL_TYPE_FILTERS).filter(
+        (key) => document.getElementById('slType-' + key)?.checked,
+    );
+    if (types.length === 0) {
+        resultEl.innerHTML = `<div class="nc-result nc-miss">${t('sl_no_types')}</div>`;
+        return;
+    }
+
     if (!currentCity) await searchCity();
     if (!currentCity) return;
 
@@ -73,16 +91,23 @@ async function runStationLengthCheck() {
     setStatus(t('sl_loading'), 'loading');
 
     try {
-        // Same station set as the "stations" POI layer, but only named ones –
-        // a station without a name cannot be measured.
+        // Only named elements – a station without a name cannot be measured.
         const bb = currentCity.bbox;
-        const data = await overpassFetch(`[out:json][timeout:60];
-(
-  node(${bbStr(bb)})["railway"~"^(station|halt|tram_stop)$"]["name"];
-  node(${bbStr(bb)})["amenity"="bus_station"]["name"];
-);
-out center bb tags;`);
-        const elements = data.elements ?? [];
+        const lines = types.map((key) => `node(${bbStr(bb)})${SL_TYPE_FILTERS[key]}["name"];`);
+        const data = await overpassFetch(
+            `[out:json][timeout:60];\n(\n  ${lines.join('\n  ')}\n);\nout center bb tags;`,
+        );
+        let elements = data.elements ?? [];
+
+        // Bus stops usually exist once per direction – collapse them like the
+        // bus-stop POI layer does, without touching the other station types.
+        if (types.includes('busstop')) {
+            const isBusStop = (el) => el.tags?.highway === 'bus_stop';
+            elements = [
+                ...elements.filter((el) => !isBusStop(el)),
+                ...deduplicateNearby(elements.filter(isBusStop), 50),
+            ];
+        }
 
         slRemoveMarkers();
 
