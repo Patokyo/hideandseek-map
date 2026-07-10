@@ -4,6 +4,7 @@
   "description": "Interactive map tool for Jet Lag: The Game – Hide & Seek",
   "private": true,
   "scripts": {
+    "start": "python3 runserver.py",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

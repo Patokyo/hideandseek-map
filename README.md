@@ -162,15 +162,19 @@ cd hideandseek-map
 
 **Do not open `index.html` directly** (e.g. by double-clicking it). When a page is loaded via `file://`, browsers send requests with `Origin: null`, and external APIs like Nominatim and the Overpass API will reject them — so no data will load.
 
-Instead, serve the folder with any static file server and open the URL it prints:
+The easiest way is the bundled dev server (no install required on macOS/Linux):
 
 ```bash
-# Python (no install required on macOS/Linux)
-python3 -m http.server 8080
-# → open http://localhost:8080
+python3 runserver.py
+# → serves http://localhost:5500 and opens it in your browser
+# picks the next free port automatically if 5500 is busy
+```
 
-# Node.js
-npx serve .
+`npm start` does the same. Any other static file server works too:
+
+```bash
+python3 -m http.server 8080   # → open http://localhost:8080
+npx serve .                   # Node.js
 ```
 
 ---
