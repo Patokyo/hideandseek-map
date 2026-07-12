@@ -1,5 +1,9 @@
 const CHANGELOG = [
     {
+        date: '2026-07-12',
+        text: 'Transit Lines: trains and ferries can now be drawn too (e.g. Sydney T1, F1) – section renamed from Bus Routes',
+    },
+    {
         date: '2026-07-09',
         text: 'Postal codes now work in Switzerland, the USA and Australia (official swisstopo / US Census / ABS boundaries as fallback where OSM has none)',
     },

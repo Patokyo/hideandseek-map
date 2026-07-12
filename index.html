@@ -222,19 +222,19 @@
         </details>
       </div>
 
-      <!-- Bus Routes -->
+      <!-- Transit Routes (bus, tram, metro, train, ferry) -->
       <div class="section">
         <details class="layers-details">
-          <summary class="section-title" data-i18n="sec_busroutes">Bus Routes</summary>
+          <summary class="section-title" data-i18n="sec_busroutes">Transit Lines</summary>
           <div style="font-size: 11px; color: #484f58; margin: 6px 0 8px" data-i18n="busroute_hint">
-            Enter line number (e.g. 305)
+            Enter line number (e.g. 305, T1, M1, F1)
           </div>
           <div class="row">
             <input
               type="text"
               id="busRouteInput"
-              placeholder="305"
-              style="flex: 1; max-width: 90px"
+              placeholder="305 / T1 / F1"
+              style="flex: 1; max-width: 110px"
             />
             <button onclick="addBusRoute()" data-i18n="btn_add_route">Draw</button>
           </div>

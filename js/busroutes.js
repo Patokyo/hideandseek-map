@@ -8,19 +8,35 @@ let busRouteItems = {}; // id → { layers, color, name, ref }
 let busRouteRefs = new Set();
 let busRouteCounter = 0;
 
+// ── Route types we draw, with their popup icons ───────────────────────────────
+// Doubles as a guard against same-ref relations of other kinds (cycle routes,
+// motorways, …), e.g. Sydney has a cycle route "T1" and a motorway "M1".
+const TRANSIT_ROUTE_ICONS = {
+    bus: '🚌',
+    trolleybus: '🚌',
+    tram: '🚋',
+    light_rail: '🚊',
+    subway: '🚇',
+    train: '🚆',
+    monorail: '🚝',
+    ferry: '⛴️',
+};
+const TRANSIT_ROUTE_REGEX = `^(${Object.keys(TRANSIT_ROUTE_ICONS).join('|')})$`;
+
 // ── Render route geometry from Overpass result ────────────────────────────────
 function renderBusRoute(data, color) {
     const layers = [];
     (data.elements ?? []).forEach((el) => {
         if (el.type !== 'relation') return;
         const name = el.tags?.name ?? el.tags?.ref ?? '';
+        const icon = TRANSIT_ROUTE_ICONS[el.tags?.route] ?? '🚌';
         (el.members ?? []).forEach((m) => {
             if (m.type !== 'way' || !m.geometry?.length) return;
             const line = L.polyline(
                 m.geometry.map((p) => [p.lat, p.lon]),
                 { color, weight: 5, opacity: 0.85 },
             );
-            line.bindPopup(`<div class="popup-name">🚌 ${esc(name)}</div>`);
+            line.bindPopup(`<div class="popup-name">${icon} ${esc(name)}</div>`);
             layers.push(line);
         });
     });
@@ -67,10 +83,10 @@ async function addBusRoute() {
         // Fall back to global search when no city is selected.
         const query = bb
             ? `[out:json][timeout:90];
-relation(${bb[0]},${bb[2]},${bb[1]},${bb[3]})["route"~"^(bus|tram|trolleybus|subway|light_rail|monorail)$"]["ref"="${ref}"];
+relation(${bb[0]},${bb[2]},${bb[1]},${bb[3]})["route"~"${TRANSIT_ROUTE_REGEX}"]["ref"="${ref}"];
 out geom;`
             : `[out:json][timeout:90];
-relation["route"~"^(bus|tram|trolleybus|subway|light_rail|monorail)$"]["ref"="${ref}"];
+relation["route"~"${TRANSIT_ROUTE_REGEX}"]["ref"="${ref}"];
 out geom;`;
 
         const data = await overpassFetch(query);
