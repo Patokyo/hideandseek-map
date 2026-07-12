@@ -1,7 +1,7 @@
 const CHANGELOG = [
     {
         date: '2026-07-09',
-        text: 'Postal codes now work in Switzerland and the USA (official swisstopo / US Census boundaries as fallback where OSM has none)',
+        text: 'Postal codes now work in Switzerland, the USA and Australia (official swisstopo / US Census / ABS boundaries as fallback where OSM has none)',
     },
     {
         date: '2026-07-09',
