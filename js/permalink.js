@@ -182,3 +182,104 @@ async function loadFromPermalink() {
     // Keep the address bar in sync whenever the user pans or zooms
     map.on('moveend', updatePermalink);
 }
+
+    // ── Export / Import map state (JSON) ────────────────────────────────────────
+    function exportMapState() {
+        const state = {
+            version: 1,
+            view: (() => {
+                const c = map.getCenter();
+                return { lat: c.lat, lng: c.lng, zoom: map.getZoom() };
+            })(),
+            layerDataCache: {},
+            busRoutes: [],
+        };
+
+        // Only export cached layer data (if present)
+        Object.keys(layerDataCache).forEach((id) => {
+            state.layerDataCache[id] = layerDataCache[id];
+        });
+
+        // Export bus routes including their Overpass responses (if available)
+        Object.values(busRouteItems).forEach((item) => {
+            state.busRoutes.push({ ref: item.ref, name: item.name, color: item.color, data: item.data });
+        });
+
+        const blob = new Blob([JSON.stringify(state)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `hideandseek-map-state-${new Date().toISOString().slice(0, 19)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function handleImportStateFile(e) {
+        const f = e.target.files?.[0];
+        if (!f) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+            try {
+                const obj = JSON.parse(reader.result);
+                importMapState(obj);
+            } catch (err) {
+                showErrorPopup('Invalid state file');
+            }
+        };
+        reader.readAsText(f);
+        // reset input so selecting same file again triggers change
+        e.target.value = '';
+    }
+
+    function importMapState(state) {
+        if (!state || state.version !== 1) {
+            showErrorPopup('Unsupported state file');
+            return;
+        }
+
+        // Clear current visible state
+        clearAllBusRoutes();
+        clearAllLayers();
+        clearAllBoundaryLayers();
+
+        // Restore map view
+        if (state.view) map.setView([state.view.lat, state.view.lng], state.view.zoom);
+
+        // Restore layers from cached Overpass results (no network requests)
+        Object.entries(state.layerDataCache ?? {}).forEach(([id, data]) => {
+            if (!LAYER_DEFS[id]) return;
+            layerDataCache[id] = data;
+            const leafletLayers = LAYER_DEFS[id].render(id, data, LAYER_DEFS[id]);
+            activeLayers[id] = leafletLayers;
+            leafletLayers.forEach((l) => l.addTo(map));
+            const cb = document.getElementById('lyr-' + id);
+            if (cb) cb.checked = true;
+            const cntEl = document.getElementById('cnt-' + id);
+            if (cntEl) cntEl.textContent = (data.elements?.length ?? 0) > 0 ? `(${data.elements.length})` : '';
+        });
+        updateLayerDots();
+        updateLayerFabBadge();
+
+        // Restore bus routes from included Overpass responses
+        if (Array.isArray(state.busRoutes)) {
+            for (const br of state.busRoutes) {
+                try {
+                    const id = ++busRouteCounter;
+                    const color = br.color ?? BUS_ROUTE_COLORS[(id - 1) % BUS_ROUTE_COLORS.length];
+                    const layers = renderBusRoute(br.data, color);
+                    layers.forEach((l) => l.addTo(map));
+                    const routeName = br.name ?? br.ref;
+                    busRouteItems[id] = { layers, color, name: routeName, ref: br.ref, custom: false, data: br.data };
+                    busRouteRefs.add(br.ref);
+                    addBusRouteListEntry(id, br.ref, routeName, color);
+                } catch (_) {
+                    /* skip problematic entries */
+                }
+            }
+        }
+
+        updatePermalink();
+        setStatus('State imported', 'ok');
+    }
