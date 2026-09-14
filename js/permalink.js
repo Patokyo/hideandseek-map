@@ -193,6 +193,10 @@ async function loadFromPermalink() {
             })(),
             layerDataCache: {},
             busRoutes: [],
+            // Persist the city the player typed plus the resolved city object
+            city: {},
+            // Persist game zone areas (allowed/drawn areas)
+            gameZone: [],
         };
 
         // Only export cached layer data (if present)
@@ -204,6 +208,19 @@ async function loadFromPermalink() {
         Object.values(busRouteItems).forEach((item) => {
             state.busRoutes.push({ ref: item.ref, name: item.name, color: item.color, data: item.data });
         });
+
+        // Export current city input and resolved city object (if any)
+        try {
+            state.city.input = document.getElementById('cityInput').value.trim();
+        } catch (_) {}
+        if (typeof currentCity !== 'undefined' && currentCity) state.city.currentCity = currentCity;
+
+        // Export game zone items (serialize geojson feature + metadata)
+        try {
+            Object.values(gzItems || {}).forEach((it) => {
+                state.gameZone.push({ feature: it.feature, name: it.name, kind: it.kind, osmKey: it.osmKey });
+            });
+        } catch (_) {}
 
         const blob = new Blob([JSON.stringify(state)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -233,16 +250,45 @@ async function loadFromPermalink() {
         e.target.value = '';
     }
 
-    function importMapState(state) {
+    async function importMapState(state) {
         if (!state || state.version !== 1) {
             showErrorPopup('Unsupported state file');
             return;
         }
 
-        // Clear current visible state
+        // Clear current visible state (including any existing game zone)
+        // Do this before restoring the city so `searchCity()` loads fresh
+        // boundary layers for the imported city rather than merging with
+        // whatever was previously displayed.
         clearAllBusRoutes();
         clearAllLayers();
         clearAllBoundaryLayers();
+        try { clearGameZone(); } catch (_) {}
+
+        // Restore city input and immediately search it when possible so the
+        // canonical `currentCity` is populated via `searchCity()` (Nominatim).
+        try {
+            if (state.city?.input) {
+                document.getElementById('cityInput').value = state.city.input;
+                await searchCity();
+            } else if (state.city?.currentCity) {
+                // Fallback: if no input string was exported, restore the
+                // resolved object directly so boundary loaders can use it.
+                currentCity = state.city.currentCity;
+                document.getElementById('cityHint').textContent = currentCity.name ?? '';
+                try {
+                    if (currentCity.bbox && currentCity.bbox.length === 4) {
+                        map.fitBounds([
+                            [currentCity.bbox[0], currentCity.bbox[2]],
+                            [currentCity.bbox[1], currentCity.bbox[3]],
+                        ]);
+                    }
+                } catch (_) {}
+                try {
+                    reloadActiveBoundaryLayers();
+                } catch (_) {}
+            }
+        } catch (_) {}
 
         // Restore map view
         if (state.view) map.setView([state.view.lat, state.view.lng], state.view.zoom);
@@ -279,6 +325,47 @@ async function loadFromPermalink() {
                 }
             }
         }
+
+        // (city has already been restored above via searchCity() or currentCity)
+
+        // Restore game zone areas (allowed/drawn areas)
+        try {
+            if (Array.isArray(state.gameZone)) {
+                for (const gz of state.gameZone) {
+                    try {
+                        const rawFeat = gz.feature;
+                        const feature = rawFeat?.type === 'Feature' ? rawFeat : turf.feature(rawFeat);
+                        const kind = gz.kind ?? 'boundary';
+                        const outline = L.geoJSON(feature, {
+                            style: {
+                                color: '#3fb950',
+                                weight: 3,
+                                opacity: 0.9,
+                                fillOpacity: 0,
+                                dashArray: kind === 'circle' ? '6 5' : null,
+                            },
+                            interactive: false,
+                        }).addTo(map);
+
+                        const id = ++gzCounter;
+                        const name = gz.name ?? (`Imported area ${id}`);
+                        const osmKey = gz.osmKey ?? ('import/' + id);
+                        gzItems[id] = { feature, layers: [outline], name, kind, osmKey };
+                        gzOsmKeys.add(osmKey);
+                        gzAddListEntry(id, name, gz.name ?? name, kind, gz.radiusKm);
+
+                        // Preserve drawn counter when importing drawn areas
+                        if (kind === 'drawn' && typeof osmKey === 'string') {
+                            const m = osmKey.match(/^drawn\/(\d+)$/);
+                            if (m) gzDrawCounter = Math.max(gzDrawCounter, parseInt(m[1], 10));
+                        }
+                    } catch (_) {
+                        /* skip problematic entries */
+                    }
+                }
+                gzRedrawMask();
+            }
+        } catch (_) {}
 
         updatePermalink();
         setStatus('State imported', 'ok');
