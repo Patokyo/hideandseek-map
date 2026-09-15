@@ -281,137 +281,18 @@
         <button style="width: 100%" onclick="completeMapSetup()">Start Game</button>
       </div>
 
-      <!-- Radius Tool -->
+      <!-- RADAR -->
       <div class="section" data-tool-section="true">
         <details class="layers-details">
-          <summary class="section-title" data-i18n="sec_radius">Radius Tool</summary>
+          <summary class="section-title" data-i18n="sec_rq">RADAR</summary>
 
-          <div class="coord-display" id="clickCoords">
-            ↖ Auf die Karte klicken, um Mittelpunkt zu setzen
-          </div>
-
-          <div style="display: flex; gap: 4px; margin-bottom: 8px">
-            <button
-              id="tabSingle"
-              style="flex: 1; font-size: 12px"
-              onclick="setRadiusMode('single')"
-              data-i18n="tab_single"
-            >
-              Single
-            </button>
-            <button
-              id="tabInterval"
-              class="ghost"
-              style="flex: 1; font-size: 12px"
-              onclick="setRadiusMode('interval')"
-              data-i18n="tab_interval"
-            >
-              Interval
-            </button>
-          </div>
-
-          <!-- Single mode -->
-          <div id="modeSingle">
-            <div class="row">
-              <input
-                type="number"
-                id="radiusKm"
-                value="2"
-                min="0.1"
-                max="100"
-                step="0.1"
-                placeholder="km"
-                style="max-width: 80px"
-              />
-              <span id="unitLabelRadius" style="line-height: 31px; color: #8b949e; font-size: 12px"
-                >km Radius</span
-              >
-              <button onclick="drawRadius()" style="margin-left: auto" data-i18n="btn_draw">
-                Draw
-              </button>
-            </div>
-          </div>
-
-          <!-- Interval mode -->
-          <div id="modeInterval" style="display: none">
-            <div class="row" style="align-items: center">
-              <input
-                type="number"
-                id="intervalStep"
-                value="1"
-                min="0.1"
-                max="50"
-                step="0.1"
-                style="max-width: 65px"
-              />
-              <span id="unitLabelStep" style="color: #8b949e; font-size: 12px; white-space: nowrap"
-                >km Schritt,</span
-              >
-              <input
-                type="number"
-                id="intervalCount"
-                value="5"
-                min="2"
-                max="10"
-                step="1"
-                style="max-width: 50px"
-              />
-              <span data-i18n="lbl_rings" style="color: #8b949e; font-size: 12px">Ringe</span>
-            </div>
-            <button
-              style="width: 100%; margin-top: 4px"
-              onclick="drawRadius()"
-              data-i18n="btn_draw"
-            >
-              Draw
-            </button>
-          </div>
-
-          <div style="font-size: 11px; color: #484f58; margin: 8px 0 4px" data-i18n="manual_hint">
-            Or enter coordinates manually:
-          </div>
-          <div class="row">
-            <input type="text" id="manualLat" placeholder="Breite z.B. 53.1435" />
-            <input type="text" id="manualLng" placeholder="Länge z.B. 8.2146" />
-          </div>
-          <button
-            class="ghost"
-            style="width: 100%; margin-bottom: 4px"
-            onclick="useManualCoords()"
-            data-i18n="btn_use_coords"
-          >
-            Use coordinates
-          </button>
-
-          <div id="radiusList"></div>
-          <div style="margin-top: 8px">
-            <button
-              class="ghost"
-              style="width: 100%"
-              onclick="clearAllRadii()"
-              data-i18n="btn_clear_radii"
-            >
-              Remove all radii
-            </button>
-          </div>
-        </details>
-      </div>
-
-      <!-- Radius Questions (yes/no) -->
-      <div class="section" data-tool-section="true">
-        <details class="layers-details">
-          <summary class="section-title" data-i18n="sec_rq">Radius Questions (Yes/No)</summary>
-          <div style="font-size: 11px; color: #484f58; margin: 6px 0 8px" data-i18n="rq_hint">
-            "Are you within N km?" — enter each question with its yes/no answer. The map shades
-            everything that is ruled out; the bright area is where the hider can still be.
-          </div>
           <div id="rqCards"></div>
           <button
             style="width: 100%; margin-top: 4px"
             onclick="addRadiusQuestion()"
             data-i18n="btn_add_rq"
           >
-            + Add question
+            + Add radar
           </button>
           <button
             class="ghost"
@@ -419,7 +300,7 @@
             onclick="clearAllRadiusQuestions()"
             data-i18n="btn_clear_rq"
           >
-            Remove all questions
+            Remove all radar
           </button>
         </details>
       </div>

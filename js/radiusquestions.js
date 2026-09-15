@@ -36,7 +36,7 @@ function _rqWorldRect(set) {
 // Returns { possible, worldRect, hasYes } — possible is null when the answers
 // contradict each other (empty region).
 function _rqComputeRegion() {
-    const set = _rqQuestions.filter((q) => q.lat !== null);
+    const set = _rqQuestions.filter((q) => q.lat !== null && q.answer !== null);
     if (!set.length) return null;
 
     const yes = set.filter((q) => q.answer === 'yes');
@@ -71,7 +71,10 @@ function _rqUpdateOverlay() {
     }
 
     const region = _rqComputeRegion();
-    if (!region) return;
+    if (!region) {
+        setStatus('');
+        return;
+    }
 
     if (!region.possible) {
         // Contradictory answers: nothing is possible → shade everything
@@ -106,14 +109,15 @@ function _rqDrawQuestion(q) {
     _rqClearLayers(q);
     if (q.lat === null) return;
 
-    const color = q.answer === 'yes' ? '#3fb950' : '#f85149';
+    const answerState = q.answer;
+    const color = answerState === 'yes' ? '#3fb950' : answerState === 'no' ? '#f85149' : '#8b949e';
     const center = L.latLng(q.lat, q.lng);
 
     const circle = L.circle(center, {
         radius: q.km * 1000,
         color,
         weight: 2,
-        dashArray: q.answer === 'yes' ? undefined : '6 4',
+        dashArray: answerState === null ? '6 4' : answerState === 'yes' ? undefined : '6 4',
         fill: false,
         interactive: false,
     }).addTo(map);
@@ -163,7 +167,7 @@ function _rqSetCenter(q, lat, lng) {
 
 // ── Public API (sidebar) ──────────────────────────────────────────────────────
 function addRadiusQuestion() {
-    _rqQuestions.push({ id: _rqNextId++, km: 1, answer: 'yes', lat: null, lng: null, layers: [] });
+    _rqQuestions.push({ id: _rqNextId++, km: 1, answer: null, lat: null, lng: null, layers: [] });
     _rqRenderCards();
 }
 
@@ -198,7 +202,7 @@ function rqSetRadius(id, val) {
 
 function rqSetAnswer(id, answer) {
     const q = _rqQuestions.find((x) => x.id === id);
-    if (!q || q.answer === answer) return;
+    if (!q) return;
     q.answer = answer;
     _rqRenderCards();
     _rqDrawQuestion(q);
@@ -282,12 +286,12 @@ function _rqRenderCards() {
     <span style="color:#8b949e;font-size:12px">${tf('lbl_radius', unitStr())}</span>
   </div>
   <div class="row" style="margin-bottom:6px">
-    <button class="rq-ans rq-ans-yes${q.answer === 'yes' ? ' active' : ''}" onclick="rqSetAnswer(${q.id},'yes')">${t('rq_yes')}</button>
-    <button class="rq-ans rq-ans-no${q.answer === 'no' ? ' active' : ''}" onclick="rqSetAnswer(${q.id},'no')">${t('rq_no')}</button>
-  </div>
-  <div class="row" style="margin-bottom:6px">
     <button id="rq-pick-btn-${q.id}" class="tent-pick-btn" style="margin-bottom:0" onclick="rqStartPick(${q.id})">${t('rq_pick_btn')}</button>
     <button class="tent-pick-btn" style="margin-bottom:0" onclick="rqUseGeo(${q.id})" title="${t('rq_geo_title')}">🎯</button>
+  </div>
+  <div class="row" style="margin-bottom:6px">
+    <button class="rq-ans rq-ans-yes${q.answer === 'yes' ? ' active' : ''}" onclick="rqSetAnswer(${q.id},'yes')">${t('rq_yes')}</button>
+    <button class="rq-ans rq-ans-no${q.answer === 'no' ? ' active' : ''}" onclick="rqSetAnswer(${q.id},'no')">${t('rq_no')}</button>
   </div>
   <div class="tent-coord" style="margin-bottom:0">${esc(coordTxt)}</div>
 </div>`;
