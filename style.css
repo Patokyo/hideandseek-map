@@ -52,6 +52,40 @@ body {
     padding: 12px 16px;
     border-bottom: 1px solid #21262d;
 }
+body.setup-mode [data-tool-section] {
+    display: none !important;
+}
+body:not(.setup-mode) [data-setup-section] {
+    display: none !important;
+}
+body.setup-mode [data-setup-only] {
+    display: flex !important;
+}
+body:not(.setup-mode) [data-setup-only] {
+    display: none !important;
+}
+body:not(.setup-mode) #styleFab,
+body:not(.setup-mode) #printFab,
+body:not(.setup-mode) #importStateFab,
+body:not(.setup-mode) #layerFab,
+body:not(.setup-mode) #layerPanel {
+    display: none !important;
+}
+.setup-quick-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.setup-quick-actions button {
+    flex: 1 1 30%;
+    min-width: 90px;
+}
+#setupMenuBtn.active {
+    background: #f0883e;
+    color: #0d1117;
+    border-color: #f0883e;
+}
 .section-title {
     font-size: 10px;
     font-weight: 600;

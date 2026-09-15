@@ -1,5 +1,33 @@
 'use strict';
 
+let mapSetupComplete = false;
+
+function updateSetupMode() {
+    const inSetup = !mapSetupComplete;
+    document.body.classList.toggle('setup-mode', inSetup);
+    const setupBtn = document.getElementById('setupMenuBtn');
+    if (setupBtn) {
+        setupBtn.classList.toggle('active', inSetup);
+        setupBtn.textContent = 'Setup Map';
+    }
+}
+
+function completeMapSetup() {
+    mapSetupComplete = true;
+    updateSetupMode();
+    setStatus('Map setup complete', 'ok');
+}
+
+function toggleSetupMode() {
+    if (mapSetupComplete) {
+        mapSetupComplete = false;
+        updateSetupMode();
+        openSidebar();
+    } else {
+        completeMapSetup();
+    }
+}
+
 // ── General helpers ───────────────────────────────────────────────────────────
 
 // Update the status bar at the bottom of the sidebar.

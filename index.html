@@ -152,10 +152,27 @@
             <button class="s-header-close" onclick="closeSidebar()" aria-label="close">✕</button>
           </div>
         </div>
+        <div style="display: flex; gap: 6px; margin-top: 8px">
+          <button id="setupMenuBtn" class="ghost" style="flex: 1; font-size: 11px; padding: 6px 8px" onclick="toggleSetupMode()">
+            Setup Map
+          </button>
+        </div>
+      </div>
+
+      <div class="section setup-quick-actions" data-setup-only="true">
+        <button class="ghost" style="flex: 1; min-width: 100px" onclick="document.getElementById('importStateInput').click()">
+          Import
+        </button>
+        <button class="ghost" style="flex: 1; min-width: 100px" onclick="toggleStylePopover()">
+          Map style
+        </button>
+        <button class="ghost" style="flex: 1; min-width: 100px" onclick="printMap()">
+          Print / PDF
+        </button>
       </div>
 
       <!-- City -->
-      <div class="section">
+      <div class="section" data-setup-section="true">
         <div class="section-title" data-i18n="sec_city">City</div>
         <div class="row">
           <input
@@ -170,7 +187,7 @@
       </div>
 
       <!-- Game Zone -->
-      <div class="section">
+      <div class="section" data-setup-section="true">
         <details class="layers-details">
           <summary class="section-title" data-i18n="sec_gamezone">Game Area</summary>
           <div style="font-size: 11px; color: #484f58; margin: 6px 0 8px" data-i18n="gz_hint">
@@ -223,7 +240,7 @@
       </div>
 
       <!-- Transit Routes (bus, tram, metro, train, ferry) -->
-      <div class="section">
+      <div class="section" data-setup-section="true">
         <details class="layers-details">
           <summary class="section-title" data-i18n="sec_busroutes">Transit Lines</summary>
           <div style="font-size: 11px; color: #484f58; margin: 6px 0 8px" data-i18n="busroute_hint">
@@ -252,8 +269,12 @@
         </details>
       </div>
 
+      <div class="section" data-setup-section="true">
+        <button style="width: 100%" onclick="completeMapSetup()">Continue to tools</button>
+      </div>
+
       <!-- Radius Tool -->
-      <div class="section">
+      <div class="section" data-tool-section="true">
         <details class="layers-details">
           <summary class="section-title" data-i18n="sec_radius">Radius Tool</summary>
 
@@ -369,7 +390,7 @@
       </div>
 
       <!-- Radius Questions (yes/no) -->
-      <div class="section">
+      <div class="section" data-tool-section="true">
         <details class="layers-details">
           <summary class="section-title" data-i18n="sec_rq">Radius Questions (Yes/No)</summary>
           <div style="font-size: 11px; color: #484f58; margin: 6px 0 8px" data-i18n="rq_hint">
@@ -396,7 +417,7 @@
       </div>
 
       <!-- Admin Division Checker -->
-      <div class="section">
+      <div class="section" data-tool-section="true">
         <details class="layers-details">
           <summary class="section-title" data-i18n="sec_admin">Admin Division</summary>
           <div style="font-size: 11px; color: #484f58; margin: 6px 0 8px" data-i18n="admin_hint">
@@ -423,7 +444,7 @@
       </div>
 
       <!-- Same Nearest Checker -->
-      <div class="section">
+      <div class="section" data-tool-section="true">
         <details class="layers-details">
           <summary class="section-title" data-i18n="sec_nearest">Same Nearest</summary>
           <div style="font-size: 11px; color: #484f58; margin: 6px 0 8px" data-i18n="nearest_hint">
@@ -510,7 +531,7 @@
       </div>
 
       <!-- Station Name Length -->
-      <div class="section">
+      <div class="section" data-tool-section="true">
         <details class="layers-details">
           <summary class="section-title" data-i18n="sec_stationlen">Station Name Length</summary>
           <div
@@ -597,7 +618,7 @@
       </div>
 
       <!-- Questions / Tentacles -->
-      <div class="section">
+      <div class="section" data-tool-section="true">
         <details class="layers-details">
           <summary class="section-title" data-i18n="sec_questions">Tentacles</summary>
           <div id="tentacleCards"></div>
@@ -612,7 +633,7 @@
       </div>
 
       <!-- Nearest POI -->
-      <div class="section">
+      <div class="section" data-tool-section="true">
         <details class="layers-details">
           <summary class="section-title" data-i18n="sec_nearest_poi">Nearest POIs</summary>
           <div
@@ -642,7 +663,7 @@
       </div>
 
       <!-- Distance & Direction -->
-      <div class="section">
+      <div class="section" data-tool-section="true">
         <details class="layers-details">
           <summary class="section-title" data-i18n="sec_measure">Distance &amp; Direction</summary>
           <div style="font-size: 11px; color: #484f58; margin: 6px 0 8px" data-i18n="measure_hint">
@@ -669,7 +690,7 @@
       </div>
 
       <!-- Clear all -->
-      <div class="section">
+      <div class="section" data-tool-section="true">
         <button class="danger" style="width: 100%" onclick="clearAll()" data-i18n="btn_clear_all">
           Reset everything
         </button>
@@ -1302,6 +1323,8 @@
 
     <script>
       // Initialisation
+      document.body.classList.add('setup-mode');
+      updateSetupMode();
       applyI18n();
       initColorMode();
       loadFromPermalink();
