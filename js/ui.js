@@ -110,8 +110,47 @@ function clearAll() {
 }
 
 // ── Map style popover ─────────────────────────────────────────────────────────
-function toggleStylePopover() {
-    document.getElementById('stylePopover').classList.toggle('open');
+function positionStylePopover(trigger) {
+    const pop = document.getElementById('stylePopover');
+    if (!pop) return;
+
+    const triggerEl = trigger instanceof HTMLElement ? trigger : document.getElementById('styleFab');
+    const pad = 12;
+
+    if (triggerEl) {
+        const rect = triggerEl.getBoundingClientRect();
+        const popWidth = pop.offsetWidth || 195;
+        const popHeight = pop.offsetHeight || 260;
+        const left = Math.min(
+            Math.max(pad, rect.left + rect.width / 2 - popWidth / 2),
+            window.innerWidth - popWidth - pad,
+        );
+        const top = Math.min(
+            Math.max(pad, rect.top + rect.height + 10),
+            window.innerHeight - popHeight - pad,
+        );
+
+        pop.style.left = `${left}px`;
+        pop.style.top = `${top}px`;
+        pop.style.right = 'auto';
+        pop.style.bottom = 'auto';
+    } else {
+        pop.style.left = '';
+        pop.style.top = '';
+        pop.style.right = '12px';
+        pop.style.bottom = '300px';
+    }
+}
+
+function toggleStylePopover(trigger = document.getElementById('styleFab')) {
+    const pop = document.getElementById('stylePopover');
+    if (!pop) return;
+
+    const shouldOpen = !pop.classList.contains('open');
+    if (shouldOpen) {
+        positionStylePopover(trigger);
+    }
+    pop.classList.toggle('open', shouldOpen);
 }
 
 function selectStyle(btn, key) {
@@ -122,7 +161,7 @@ function selectStyle(btn, key) {
     updatePermalink();
 }
 
-registerPopoverClickOutside('stylePopover', 'styleFab');
+registerPopoverClickOutside('stylePopover', ['styleFab', 'setupStyleBtn']);
 
 // ── Layer panel ───────────────────────────────────────────────────────────────
 function toggleLayerPanel() {

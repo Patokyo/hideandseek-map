@@ -11,12 +11,16 @@ let currentTileLayer = L.tileLayer(TILE_LAYERS.osm.url, {
     maxZoom: TILE_LAYERS.osm.maxZoom,
 }).addTo(map);
 
-// ── Close a popover when clicking outside it or its trigger button ────────────
-function registerPopoverClickOutside(popId, fabId) {
+// ── Close a popover when clicking outside it or its trigger button(s) ───────
+function registerPopoverClickOutside(popId, triggerIds) {
+    const ids = Array.isArray(triggerIds) ? triggerIds : [triggerIds];
     document.addEventListener('click', (e) => {
         const pop = document.getElementById(popId);
-        const fab = document.getElementById(fabId);
-        if (pop?.classList.contains('open') && !pop.contains(e.target) && !fab.contains(e.target)) {
+        const clickedTrigger = ids.some((id) => {
+            const trigger = document.getElementById(id);
+            return trigger && trigger.contains(e.target);
+        });
+        if (pop?.classList.contains('open') && !pop.contains(e.target) && !clickedTrigger) {
             pop.classList.remove('open');
         }
     });

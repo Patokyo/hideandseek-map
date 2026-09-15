@@ -23,8 +23,15 @@ body {
     flex-direction: column;
     background: #161b22;
     border-right: 1px solid #30363d;
-    overflow-y: auto;
+    overflow: hidden;
     z-index: 1000;
+    height: 100vh;
+}
+
+#sidebar-content {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
 }
 
 #map {
@@ -263,7 +270,7 @@ button.danger:hover {
 
 /* ── Status bar ───────────────────────────────────── */
 #status {
-    margin-top: auto;
+    flex-shrink: 0;
     padding: 7px 16px;
     font-size: 11px;
     color: #8b949e;
@@ -1317,7 +1324,21 @@ button.meas-active:hover {
 
 /* ── Changelog ───────────────────────────────────── */
 .cl-section {
-    margin-top: auto;
+    width: 100%;
+    background: rgba(22, 27, 34, 0.95);
+    border-top: 1px solid #30363d;
+    border-radius: 0;
+    box-shadow: none;
+    backdrop-filter: none;
+    flex-shrink: 0;
+}
+
+.cl-section details {
+    padding: 8px 10px 10px;
+}
+
+.cl-section summary {
+    padding: 0;
 }
 
 .cl-badge {

@@ -163,7 +163,15 @@
         <button class="ghost" style="flex: 1; min-width: 100px" onclick="document.getElementById('importStateInput').click()">
           Import
         </button>
-        <button class="ghost" style="flex: 1; min-width: 100px" onclick="toggleStylePopover()">
+        <button class="ghost" style="flex: 1; min-width: 100px" onclick="exportMapState()">
+          Export
+        </button>
+        <button
+          class="ghost"
+          id="setupStyleBtn"
+          style="flex: 1; min-width: 100px"
+          onclick="toggleStylePopover(this); if (window.matchMedia('(max-width: 700px)').matches) closeSidebar();"
+        >
           Map style
         </button>
         <button class="ghost" style="flex: 1; min-width: 100px" onclick="printMap()">
@@ -171,7 +179,7 @@
         </button>
       </div>
 
-      <!-- City -->
+      <div id="sidebar-content">
       <div class="section" data-setup-section="true">
         <div class="section-title" data-i18n="sec_city">City</div>
         <div class="row">
@@ -270,7 +278,7 @@
       </div>
 
       <div class="section" data-setup-section="true">
-        <button style="width: 100%" onclick="completeMapSetup()">Continue to tools</button>
+        <button style="width: 100%" onclick="completeMapSetup()">Start Game</button>
       </div>
 
       <!-- Radius Tool -->
@@ -696,6 +704,8 @@
         </button>
       </div>
 
+      </div>
+
       <!-- Changelog -->
       <div class="section cl-section">
         <details class="layers-details">
@@ -756,7 +766,7 @@
     <!-- ════════ MAP STYLE FAB ════════ -->
     <button
       id="styleFab"
-      onclick="toggleStylePopover()"
+      onclick="toggleStylePopover(this)"
       data-i18n-title="fab_style_title"
       title="Choose map style"
       aria-label="Choose map style"
