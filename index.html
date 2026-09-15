@@ -278,6 +278,11 @@
       </div>
 
       <div class="section" data-setup-section="true">
+        <div class="section-title" data-i18n="sec_layers">POI Layers</div>
+        <div id="setupPoiLayerList"></div>
+      </div>
+
+      <div class="section" data-setup-section="true">
         <button style="width: 100%" onclick="completeMapSetup()">Start Game</button>
       </div>
 
@@ -1218,6 +1223,8 @@
       updateSetupMode();
       applyI18n();
       initColorMode();
+      renderSetupPoiLayerList();
+      syncGameLayerPanel();
       loadFromPermalink();
       renderChangelog();
     </script>

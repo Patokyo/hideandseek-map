@@ -14,6 +14,12 @@ function updateSetupMode() {
 
 function completeMapSetup() {
     mapSetupComplete = true;
+    gamePoiLayerSelection.clear();
+    [...setupPoiLayerSelection].forEach((id) => {
+        if (layerDataCache[id]) gamePoiLayerSelection.add(id);
+    });
+    Object.keys(activeLayers).forEach((id) => removeLayer(id));
+    renderGamePoiLayerPanel();
     updateSetupMode();
     setStatus('Map setup complete', 'ok');
 }
@@ -169,7 +175,9 @@ function toggleLayerPanel() {
 }
 
 function updateLayerFabBadge() {
-    const count = document.querySelectorAll('[id^="lyr-"]:checked').length;
+    const count = !mapSetupComplete
+        ? 0
+        : [...gamePoiLayerSelection].filter((id) => activeLayers[id]).length;
     const badge = document.getElementById('layerFabBadge');
     const fab = document.getElementById('layerFab');
     if (count > 0) {

@@ -297,6 +297,7 @@ async function loadFromPermalink() {
         Object.entries(state.layerDataCache ?? {}).forEach(([id, data]) => {
             if (!LAYER_DEFS[id]) return;
             layerDataCache[id] = data;
+            setupPoiLayerSelection.add(id);
             const leafletLayers = LAYER_DEFS[id].render(id, data, LAYER_DEFS[id]);
             activeLayers[id] = leafletLayers;
             leafletLayers.forEach((l) => l.addTo(map));
@@ -305,6 +306,8 @@ async function loadFromPermalink() {
             const cntEl = document.getElementById('cnt-' + id);
             if (cntEl) cntEl.textContent = (data.elements?.length ?? 0) > 0 ? `(${data.elements.length})` : '';
         });
+        renderSetupPoiLayerList();
+        renderGamePoiLayerPanel();
         updateLayerDots();
         updateLayerFabBadge();
 

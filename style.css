@@ -74,8 +74,8 @@ body:not(.setup-mode) [data-setup-only] {
 body:not(.setup-mode) #styleFab,
 body:not(.setup-mode) #printFab,
 body:not(.setup-mode) #importStateFab,
-body:not(.setup-mode) #layerFab,
-body:not(.setup-mode) #layerPanel {
+body.setup-mode #layerFab,
+body.setup-mode #layerPanel {
     display: none !important;
 }
 .setup-quick-actions {

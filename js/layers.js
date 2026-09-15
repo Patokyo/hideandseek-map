@@ -419,16 +419,90 @@ out center bb tags;`,
 // ── Layer state ───────────────────────────────────────────────────────────────
 let activeLayers = {};
 const layerDataCache = {}; // id → last Overpass response (used for re-colour without re-fetch)
+const setupPoiLayerSelection = new Set();
+const gamePoiLayerSelection = new Set();
+const POI_LAYER_IDS = Object.keys(LAYER_DEFS);
 
-// ── Toggle layer on/off ───────────────────────────────────────────────────────
-async function toggleLayer(id, enabled) {
+function renderSetupPoiLayerList() {
+    const container = document.getElementById('setupPoiLayerList');
+    if (!container) return;
+
+    container.innerHTML = POI_LAYER_IDS.map((id) => {
+        const def = LAYER_DEFS[id];
+        const checked = setupPoiLayerSelection.has(id) ? 'checked' : '';
+        const checkboxId = `setup-lyr-${id}`;
+        return `
+<label class="layer-row" for="${checkboxId}">
+  <input type="checkbox" id="${checkboxId}" data-layer-id="${id}" ${checked} onchange="toggleSetupPoiLayer('${id}', this.checked)" />
+  <div class="dot" style="background: ${def.color}"></div>
+  <span class="layer-name">${t(def.label)}</span>
+  <span class="layer-count" id="cnt-${id}"></span>
+</label>`;
+    }).join('');
+}
+
+function renderGamePoiLayerPanel() {
+    const body = document.querySelector('#layerPanel .lp-body');
+    if (!body) return;
+
+    const ids = [...gamePoiLayerSelection];
+    if (!ids.length) {
+        body.innerHTML = '<div class="layer-row" style="opacity:0.7">No cached POI layers</div>';
+        return;
+    }
+
+    body.innerHTML = ids
+        .map((id) => {
+            const def = LAYER_DEFS[id];
+            const checked = activeLayers[id] ? 'checked' : '';
+            return `
+<label class="layer-row" for="lyr-${id}">
+  <input type="checkbox" id="lyr-${id}" ${checked} onchange="toggleLayer('${id}', this.checked)" />
+  <div class="dot" style="background: ${def.color}"></div>
+  <span class="layer-name">${t(def.label)}</span>
+  <span class="layer-count" id="cnt-${id}"></span>
+</label>`;
+        })
+        .join('');
+}
+
+async function toggleSetupPoiLayer(id, enabled) {
     if (enabled) {
+        setupPoiLayerSelection.add(id);
         if (!currentCity) await searchCity();
         await loadLayer(id);
     } else {
+        setupPoiLayerSelection.delete(id);
         removeLayer(id);
         delete layerDataCache[id];
     }
+
+    renderSetupPoiLayerList();
+    updatePermalink();
+    updateLayerFabBadge();
+}
+
+// ── Toggle layer on/off ───────────────────────────────────────────────────────
+async function toggleLayer(id, enabled) {
+    if (!mapSetupComplete) {
+        await toggleSetupPoiLayer(id, enabled);
+        return;
+    }
+
+    if (!gamePoiLayerSelection.has(id)) return;
+
+    if (enabled) {
+        if (activeLayers[id]) return;
+        if (!layerDataCache[id]) return;
+        const def = LAYER_DEFS[id];
+        const leafletLayers = def.render(id, layerDataCache[id], def);
+        activeLayers[id] = leafletLayers;
+        leafletLayers.forEach((l) => l.addTo(map));
+    } else {
+        removeLayer(id);
+    }
+
+    renderGamePoiLayerPanel();
     updatePermalink();
     updateLayerFabBadge();
 }
@@ -460,10 +534,12 @@ async function loadLayer(id) {
         activeLayers[id] = leafletLayers;
         leafletLayers.forEach((l) => l.addTo(map));
 
+        setupPoiLayerSelection.add(id);
         const n = data.elements?.length ?? 0;
         if (cntEl) cntEl.textContent = n > 0 ? `(${n})` : '';
         if (n > 0) setStatus(tf('status_loaded', t(def.label)), 'ok');
         else setStatus(tf('status_layer_empty', t(def.label)), 'error');
+        renderSetupPoiLayerList();
     } catch (e) {
         if (cntEl) cntEl.textContent = '✗';
         setStatus(t('status_err_popup'), 'error');
@@ -514,7 +590,12 @@ function updateLayerDots() {
 // ── Remove all layers ─────────────────────────────────────────────────────────
 function clearAllLayers() {
     Object.keys(activeLayers).forEach(removeLayer);
+    setupPoiLayerSelection.clear();
+    gamePoiLayerSelection.clear();
+    Object.keys(layerDataCache).forEach((id) => delete layerDataCache[id]);
     document.querySelectorAll('[id^="lyr-"]').forEach((cb) => (cb.checked = false));
+    renderSetupPoiLayerList();
+    renderGamePoiLayerPanel();
     updatePermalink();
     updateLayerFabBadge();
 }
