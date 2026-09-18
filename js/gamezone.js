@@ -149,6 +149,7 @@ async function addGameZoneArea() {
 
         gzAddListEntry(id, name, best.display_name, kind, radiusKm);
         gzRedrawMask();
+        filterCachedPoisByGameZone();
         gzFitZone();
         input.value = '';
         setStatus(tf('status_gz_added', name), 'ok');
@@ -188,6 +189,7 @@ function removeGameZoneArea(id) {
     delete gzItems[id];
     document.getElementById('gz-' + id)?.remove();
     gzRedrawMask();
+    filterCachedPoisByGameZone();
 }
 
 function clearGameZone() {

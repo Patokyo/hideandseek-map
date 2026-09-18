@@ -529,6 +529,7 @@ async function loadLayer(id) {
         }
 
         layerDataCache[id] = data;
+        filterCachedPoisByGameZone();
         removeLayer(id);
         const leafletLayers = def.render(id, data, def);
         activeLayers[id] = leafletLayers;
@@ -599,3 +600,32 @@ function clearAllLayers() {
     updatePermalink();
     updateLayerFabBadge();
 }
+
+/**
+ * Removes POIs from the cache that fall outside the current game zone.
+ * Called whenever the game zone is modified during setup.
+ */
+function filterCachedPoisByGameZone() {
+    if (!gameZoneActive()) return;
+
+    Object.keys(layerDataCache).forEach((id) => {
+        const data = layerDataCache[id];
+        if (!data || !data.elements) return;
+
+        const originalCount = data.elements.length;
+        data.elements = data.elements.filter((el) => {
+            const c = getElementCenter(el);
+            return c ? gameZoneContains(c.lat, c.lng) : false;
+        });
+
+        if (data.elements.length !== originalCount) {
+            // Update the count in the setup UI if the layer is listed there
+            const cntEl = document.getElementById('cnt-' + id);
+            if (cntEl) {
+                const n = data.elements.length;
+                cntEl.textContent = n > 0 ? `(${n})` : '';
+            }
+        }
+    });
+}
+
