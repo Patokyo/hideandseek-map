@@ -1,75 +1,5 @@
 'use strict';
 
-// ── POI type definitions ──────────────────────────────────────────────────────
-// label: i18n-Schlüssel (geteilt mit den POI-Layern in layers.js)
-// relQ: relations werden separat abgefragt da `out center` für relations
-// Koordinaten liefert (wichtig für große Krankenhäuser, Museen etc. in OSM)
-const TENT_TYPES = {
-    museum: {
-        label: 'lyr_museum',
-        icon: '🏛️',
-        nodeQ: '"tourism"="museum"',
-        wayQ: '"tourism"="museum"',
-        relQ: '"tourism"="museum"',
-    },
-    station: {
-        label: 'lyr_stations',
-        icon: '🚉',
-        nodeQ: '"railway"~"^(station|halt|tram_stop)$"',
-        wayQ: null,
-        relQ: null,
-    },
-    hospital: {
-        label: 'lyr_hospitals',
-        icon: '🏥',
-        nodeQ: '"amenity"="hospital"',
-        wayQ: '"amenity"="hospital"',
-        relQ: '"amenity"="hospital"',
-    },
-    cinema: {
-        label: 'lyr_cinema',
-        icon: '🎬',
-        nodeQ: '"amenity"="cinema"',
-        wayQ: '"amenity"="cinema"',
-        relQ: '"amenity"="cinema"',
-    },
-    library: {
-        label: 'lyr_library',
-        icon: '📚',
-        nodeQ: '"amenity"="library"',
-        wayQ: '"amenity"="library"',
-        relQ: '"amenity"="library"',
-    },
-    zoo: {
-        label: 'lyr_zoo',
-        icon: '🦁',
-        nodeQ: '"tourism"="zoo"',
-        wayQ: '"tourism"="zoo"',
-        relQ: '"tourism"="zoo"',
-    },
-    aquarium: {
-        label: 'lyr_aquarium',
-        icon: '🐠',
-        nodeQ: '"tourism"="aquarium"',
-        wayQ: '"tourism"="aquarium"',
-        relQ: '"tourism"="aquarium"',
-    },
-    amusement: {
-        label: 'lyr_amusementpark',
-        icon: '🎡',
-        nodeQ: '"leisure"="amusement_park"',
-        wayQ: '"leisure"="amusement_park"',
-        relQ: '"leisure"="amusement_park"',
-    },
-    golf: {
-        label: 'lyr_golf',
-        icon: '⛳',
-        nodeQ: '"leisure"="golf_course"',
-        wayQ: '"leisure"="golf_course"',
-        relQ: '"leisure"="golf_course"',
-    },
-};
-
 // ── Module state ──────────────────────────────────────────────────────────────
 let _tentQuestions = [];
 let _tentNextId = 1;
@@ -78,16 +8,6 @@ let _tentPickingId = null;
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function _tentKm(q) {
     return q.unit === 'mi' ? q.radius * 1.60934 : q.radius;
-}
-
-function _tentBuildQuery(type, lat, lng, radiusM) {
-    const td = TENT_TYPES[type];
-    const a = `around:${Math.ceil(radiusM)},${lat},${lng}`;
-    const lines = [];
-    if (td.nodeQ) lines.push(`  node(${a})[${td.nodeQ}];`);
-    if (td.wayQ) lines.push(`  way(${a})[${td.wayQ}];`);
-    if (td.relQ) lines.push(`  relation(${a})[${td.relQ}];`);
-    return `[out:json][timeout:60];\n(\n${lines.join('\n')}\n);\nout center tags;`;
 }
 
 // ── Map click hook for center-point picking ───────────────────────────────────
@@ -110,24 +30,34 @@ addMapClickHook((e) => {
     return true;
 });
 
-// ── Fetch POIs from Overpass ──────────────────────────────────────────────────
+// ── Fetch POIs from cache ──────────────────────────────────────────────────
 async function _tentFetchPOIs(id) {
     const q = _tentQuestions.find((x) => x.id === id);
-    if (!q || q.centerLat === null) return;
+    if (!q || q.centerLat === null || !q.poiLayerId) return;
 
     const radiusKm = _tentKm(q);
-    const query = _tentBuildQuery(q.poiType, q.centerLat, q.centerLng, radiusKm * 1000);
+    const data = layerDataCache[q.poiLayerId];
 
     const sel = document.getElementById(`tent-poi-select-${id}`);
     if (sel) {
         sel.innerHTML = `<option>${t('tent_loading')}</option>`;
         sel.disabled = true;
     }
-    setStatus(tf('tent_status_loading', t(TENT_TYPES[q.poiType].label)), 'loading');
+
+    const label = LAYER_DEFS[q.poiLayerId]?.label;
+    setStatus(tf('tent_status_loading', t(label)), 'loading');
+
+    if (!data || !data.elements) {
+        if (sel) {
+            sel.innerHTML = `<option value="">${t('tent_error')}</option>`;
+            sel.disabled = false;
+        }
+        setStatus('Layer not cached', 'error');
+        return;
+    }
 
     try {
-        const data = await overpassFetch(query);
-        const raw = (data.elements ?? [])
+        const raw = data.elements
             .map((el) => {
                 const c = getElementCenter(el);
                 if (!c) return null;
@@ -157,8 +87,7 @@ async function _tentFetchPOIs(id) {
                     .join('');
             sel.disabled = false;
         }
-        // Re-resolve the previous selection against the fresh POI list: redraw
-        // with the new radius if still present, otherwise drop the stale polygon.
+        // Re-resolve the previous selection against the fresh POI list
         if (q.selectedPOI) {
             q.selectedPOI = q.fetchedPOIs.find((p) => p.id === q.selectedPOI.id) ?? null;
             if (q.selectedPOI) _tentDraw(id);
@@ -166,7 +95,7 @@ async function _tentFetchPOIs(id) {
         }
 
         setStatus(
-            tf('tent_status_found', q.fetchedPOIs.length, t(TENT_TYPES[q.poiType].label)),
+            tf('tent_status_found', q.fetchedPOIs.length, t(label)),
             'ok',
         );
         updatePermalink();
@@ -176,14 +105,11 @@ async function _tentFetchPOIs(id) {
             sel.disabled = false;
         }
         showErrorPopup(err.message);
-        setStatus('Error loading POIs', 'error');
+        setStatus('Error processing POIs', 'error');
     }
 }
 
 // ── Geodesically-correct Voronoi via equirectangular projection ───────────────
-// turf.voronoi works in Euclidean (x,y) space. Geographic lat/lng is NOT
-// Euclidean: a degree of longitude is shorter than a degree of latitude by cos(lat).
-// Fix: project to local km coords → compute Voronoi → reproject to lat/lng.
 function _tentProjectedVoronoi(pois, centerLat, centerLng, radiusKm) {
     const KM_PER_DEG = 111;
     const cosLat = Math.cos((centerLat * Math.PI) / 180);
@@ -284,7 +210,8 @@ async function _tentDraw(id) {
     );
 
     // POI markers
-    const icon = TENT_TYPES[q.poiType].icon;
+    const def = LAYER_DEFS[q.poiLayerId];
+    const icon = def?.icon ?? '📍';
     q.fetchedPOIs.forEach((p) => {
         const isSel = p.id === q.selectedPOI?.id;
         q.layers.push(
@@ -315,7 +242,7 @@ function addTentacleQuestion() {
         id,
         radius: 15,
         unit: 'km',
-        poiType: 'museum',
+        poiLayerId: null,
         centerLat: null,
         centerLng: null,
         selectedPOI: null,
@@ -355,10 +282,10 @@ function tentSetUnit(id, unit) {
     if (q.centerLat !== null) _tentFetchPOIs(id);
 }
 
-function tentSetType(id, type) {
+function tentSetLayer(id, layerId) {
     const q = _tentQuestions.find((x) => x.id === id);
     if (!q) return;
-    q.poiType = type;
+    q.poiLayerId = layerId || null;
     q.selectedPOI = null;
     q.fetchedPOIs = [];
     _tentClearLayers(q);
@@ -389,7 +316,7 @@ function tentSerialise() {
         .filter((q) => q.centerLat !== null)
         .map((q) =>
             [
-                q.poiType,
+                q.poiLayerId,
                 q.radius,
                 q.unit,
                 q.centerLat.toFixed(5),
@@ -403,8 +330,8 @@ async function tentRestoreFromPermalink(params) {
     for (const s of params) {
         const parts = s.split(',');
         if (parts.length < 6) continue;
-        const [poiType, radiusStr, unit, latStr, lngStr, poiIdStr] = parts;
-        if (!TENT_TYPES[poiType]) continue;
+        const [poiLayerId, radiusStr, unit, latStr, lngStr, poiIdStr] = parts;
+        if (!LAYER_DEFS[poiLayerId]) continue;
         const lat = parseFloat(latStr);
         const lng = parseFloat(lngStr);
         const radius = parseFloat(radiusStr);
@@ -415,7 +342,7 @@ async function tentRestoreFromPermalink(params) {
             id,
             radius,
             unit: unit === 'mi' ? 'mi' : 'km',
-            poiType,
+            poiLayerId,
             centerLat: lat,
             centerLng: lng,
             selectedPOI: null,
@@ -437,11 +364,13 @@ function _tentRenderCards() {
 
     el.innerHTML = _tentQuestions
         .map((q, i) => {
-            const typeOpts = Object.entries(TENT_TYPES)
-                .map(
-                    ([k, v]) =>
-                        `<option value="${k}"${k === q.poiType ? ' selected' : ''}>${t(v.label)}</option>`,
-                )
+            const available = Object.keys(layerDataCache || {});
+            const layerOpts = available
+                .map((id) => {
+                    const def = LAYER_DEFS[id];
+                    const label = def ? t(def.label) : id;
+                    return `<option value="${id}"${id === q.poiLayerId ? ' selected' : ''}>${esc(label)}</option>`;
+                })
                 .join('');
 
             const poiOpts = q.fetchedPOIs.length
@@ -473,8 +402,9 @@ function _tentRenderCards() {
       <option value="mi"${q.unit === 'mi' ? ' selected' : ''}>${t('tent_miles')}</option>
     </select>
   </div>
-  <select style="margin-bottom:6px" onchange="tentSetType(${q.id}, this.value)">
-    ${typeOpts}
+  <select style="margin-bottom:6px" onchange="tentSetLayer(${q.id}, this.value)">
+    <option value="">${t('matching_choose_layer') || 'Choose layer...'}</option>
+    ${layerOpts}
   </select>
   <button id="tent-pick-btn-${q.id}" class="tent-pick-btn" onclick="tentStartPick(${q.id})">
     ${t('tent_location_btn')}
@@ -487,4 +417,3 @@ function _tentRenderCards() {
         })
         .join('');
 }
-
