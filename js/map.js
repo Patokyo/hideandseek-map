@@ -35,6 +35,11 @@ function addMapClickHook(fn) {
     _mapClickHooks.push(fn);
 }
 
+function removeMapClickHook(fn) {
+    const idx = _mapClickHooks.indexOf(fn);
+    if (idx !== -1) _mapClickHooks.splice(idx, 1);
+}
+
 // ── Switch map style ──────────────────────────────────────────────────────────
 function setTileLayer(key) {
     const def = TILE_LAYERS[key];

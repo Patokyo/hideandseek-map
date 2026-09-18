@@ -22,6 +22,8 @@ function completeMapSetup() {
     renderGamePoiLayerPanel();
     updateSetupMode();
     setStatus('Map setup complete', 'ok');
+
+    if (typeof hiderUpdateLayerList === 'function') hiderUpdateLayerList();
 }
 
 function toggleSetupMode() {

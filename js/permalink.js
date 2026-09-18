@@ -311,6 +311,8 @@ async function loadFromPermalink() {
         updateLayerDots();
         updateLayerFabBadge();
 
+        if (typeof hiderUpdateLayerList === 'function') hiderUpdateLayerList();
+
         // Restore bus routes from included Overpass responses
         if (Array.isArray(state.busRoutes)) {
             for (const br of state.busRoutes) {
