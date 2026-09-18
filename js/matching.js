@@ -235,29 +235,7 @@ async function mqRun(id) {
 
     if (q.answerYes) {
         // Yes -> keep only the selected cell visible: world with hole = selFeature
-        const holes = [];
-        const geom = selFeature.geometry;
-        const polys = geom.type === 'Polygon' ? [geom.coordinates] : geom.coordinates;
-        for (const rings of polys) {
-            if (!rings || !rings.length) continue;
-            const outer = rings[0].map(([lng, lat]) => [lat, lng]);
-            holes.push(outer);
-        }
-
-        // World polygon (lat,lng coords)
-        const world = [
-            [-89.9, -180],
-            [-89.9, 180],
-            [89.9, 180],
-            [89.9, -180],
-        ];
-
-        q.maskLayer = L.polygon([world, ...holes], {
-            stroke: false,
-            fillColor: '#0d1117',
-            fillOpacity: 0.55,
-            interactive: false,
-        }).addTo(map);
+        q.maskLayer = createOcclusionLayer(selFeature, { invert: true }).addTo(map);
 
         // Outline the kept cell
         const keepStyle = { color: '#2c9e3c', weight: 2.5, fillOpacity: 0, interactive: false };
@@ -268,23 +246,8 @@ async function mqRun(id) {
             // ignore
         }
     } else {
-        // No -> same dark masking style as the radius questions: only this cell is
-        // shaded out while the rest of the map stays normal.
-        if (q.maskLayer) {
-            map.removeLayer(q.maskLayer);
-            q.maskLayer = null;
-        }
-        const blockStyle = {
-            stroke: false,
-            fillColor: '#0d1117',
-            fillOpacity: 0.55,
-            interactive: false,
-        };
-        try {
-            q.maskLayer = L.geoJSON(selFeature, { style: blockStyle }).addTo(map);
-        } catch (e) {
-            // ignore
-        }
+        // No -> shade only this cell
+        q.maskLayer = createOcclusionLayer(selFeature).addTo(map);
     }
 
 

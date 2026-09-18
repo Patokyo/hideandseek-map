@@ -78,21 +78,16 @@ function _rqUpdateOverlay() {
 
     if (!region.possible) {
         // Contradictory answers: nothing is possible → shade everything
-        _rqMaskLayer = L.geoJSON(region.worldRect, {
-            style: { stroke: false, fillColor: '#0d1117', fillOpacity: 0.55 },
-            interactive: false,
-        }).addTo(map);
+        _rqMaskLayer = createOcclusionLayer(region.worldRect).addTo(map);
         setStatus(t('status_rq_conflict'), 'error');
         return;
     }
 
-    const mask = turf.difference(region.worldRect, region.possible);
-    if (mask) {
-        _rqMaskLayer = L.geoJSON(mask, {
-            style: { stroke: false, fillColor: '#0d1117', fillOpacity: 0.55 },
-            interactive: false,
-        }).addTo(map);
-    }
+    _rqMaskLayer = createOcclusionLayer(region.possible, {
+        invert: true,
+        world: region.worldRect,
+    }).addTo(map);
+
     _rqOutlineLayer = L.geoJSON(region.possible, {
         style: { color: '#3fb950', weight: 2.5, fill: false },
         interactive: false,
