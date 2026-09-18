@@ -159,7 +159,20 @@ async function _tentDraw(id) {
         steps: 128,
     });
 
-    if (q.fetchedPOIs.length === 1) {
+    if (q.confirmed) {
+        // Confirmed: Shade everything except the selected cell
+        const voronoi = _tentProjectedVoronoi(q.fetchedPOIs, q.centerLat, q.centerLng, radiusKm);
+        if (voronoi?.features?.length) {
+            const selIdx = q.fetchedPOIs.findIndex((p) => p.id === q.selectedPOI.id);
+            const selectedCell = voronoi.features[selIdx];
+            if (selectedCell) {
+                const clipped = turf.intersect(selectedCell, circle);
+                if (clipped) {
+                    q.layers.push(createOcclusionLayer(clipped, { invert: true }).addTo(map));
+                }
+            }
+        }
+    } else if (q.fetchedPOIs.length === 1) {
         // Only one POI in radius → the entire circle belongs to it
         q.layers.push(
             L.geoJSON(circle, {
@@ -197,35 +210,38 @@ async function _tentDraw(id) {
         });
     }
 
-    // Center dot
-    q.layers.push(
-        L.circleMarker([q.centerLat, q.centerLng], {
-            radius: 5,
-            color: '#3b82f6',
-            fillColor: '#3b82f6',
-            fillOpacity: 1,
-            weight: 2,
-            interactive: false,
-        }).addTo(map),
-    );
-
-    // POI markers
-    const def = LAYER_DEFS[q.poiLayerId];
-    const icon = def?.icon ?? '📍';
-    q.fetchedPOIs.forEach((p) => {
-        const isSel = p.id === q.selectedPOI?.id;
+    // Only add markers if not confirmed
+    if (!q.confirmed) {
+        // Center dot
         q.layers.push(
-            L.circleMarker([p.lat, p.lng], {
-                radius: isSel ? 8 : 5,
-                color: '#fff',
-                fillColor: isSel ? '#3b82f6' : '#6b7280',
-                fillOpacity: 0.9,
+            L.circleMarker([q.centerLat, q.centerLng], {
+                radius: 5,
+                color: '#3b82f6',
+                fillColor: '#3b82f6',
+                fillOpacity: 1,
                 weight: 2,
-            })
-                .bindPopup(`<div class="popup-name">${icon} ${esc(p.name)}</div>`)
-                .addTo(map),
+                interactive: false,
+            }).addTo(map),
         );
-    });
+
+        // POI markers
+        const def = LAYER_DEFS[q.poiLayerId];
+        const icon = def?.icon ?? '📍';
+        q.fetchedPOIs.forEach((p) => {
+            const isSel = p.id === q.selectedPOI?.id;
+            q.layers.push(
+                L.circleMarker([p.lat, p.lng], {
+                    radius: isSel ? 8 : 5,
+                    color: '#fff',
+                    fillColor: isSel ? '#3b82f6' : '#6b7280',
+                    fillOpacity: 0.9,
+                    weight: 2,
+                })
+                    .bindPopup(`<div class="popup-name">${icon} ${esc(p.name)}</div>`)
+                    .addTo(map),
+            );
+        });
+    }
 }
 
 // ── Clear all map layers for a question ───────────────────────────────────────
@@ -248,6 +264,7 @@ function addTentacleQuestion() {
         selectedPOI: null,
         fetchedPOIs: [],
         layers: [],
+        confirmed: false,
     });
     _tentRenderCards();
 }
@@ -272,6 +289,7 @@ function tentSetRadius(id, val) {
     const q = _tentQuestions.find((x) => x.id === id);
     if (!q) return;
     q.radius = parseFloat(val) || 15;
+    q.confirmed = false;
     if (q.centerLat !== null) _tentFetchPOIs(id);
 }
 
@@ -279,6 +297,7 @@ function tentSetUnit(id, unit) {
     const q = _tentQuestions.find((x) => x.id === id);
     if (!q) return;
     q.unit = unit;
+    q.confirmed = false;
     if (q.centerLat !== null) _tentFetchPOIs(id);
 }
 
@@ -288,20 +307,52 @@ function tentSetLayer(id, layerId) {
     q.poiLayerId = layerId || null;
     q.selectedPOI = null;
     q.fetchedPOIs = [];
+    q.confirmed = false;
     _tentClearLayers(q);
     const sel = document.getElementById(`tent-poi-select-${id}`);
     if (sel) sel.innerHTML = `<option value="">${t('tent_select_poi')}</option>`;
     if (q.centerLat !== null) _tentFetchPOIs(id);
 }
 
+function tentConfirm(id) {
+    const q = _tentQuestions.find((x) => x.id === id);
+    if (!q) return;
+    q.confirmed = !q.confirmed;
+    _tentDraw(id);
+    _tentRenderCards();
+    updatePermalink();
+}
+
+function _tentSetCenter(q, lat, lng, id) {
+    q.centerLat = lat;
+    q.centerLng = lng;
+    _tentRenderCards();
+    _tentDraw(id);
+    _tentFetchPOIs(id);
+    updatePermalink();
+}
+
 function tentStartPick(id) {
+
     _tentPickingId = id;
     document.getElementById(`tent-pick-btn-${id}`)?.classList.add('meas-active');
     setStatus(t('tent_status_pick'), 'loading');
     closeSidebarForPick();
 }
 
+function tentUseGeo(id) {
+    const q = _tentQuestions.find((x) => x.id === id);
+    if (!q) return;
+    if (!geoMarker) {
+        setStatus(t('status_rq_no_geo'), 'error');
+        return;
+    }
+    const c = geoMarker.getLatLng();
+    _tentSetCenter(q, c.lat, c.lng, id);
+}
+
 function tentSelectPOI(id, val) {
+
     const q = _tentQuestions.find((x) => x.id === id);
     if (!q) return;
     q.selectedPOI = q.fetchedPOIs.find((p) => String(p.id) === String(val)) ?? null;
@@ -322,6 +373,7 @@ function tentSerialise() {
                 q.centerLat.toFixed(5),
                 q.centerLng.toFixed(5),
                 q.selectedPOI?.id ?? 0,
+                q.confirmed ? '1' : '0',
             ].join(','),
         );
 }
@@ -329,8 +381,8 @@ function tentSerialise() {
 async function tentRestoreFromPermalink(params) {
     for (const s of params) {
         const parts = s.split(',');
-        if (parts.length < 6) continue;
-        const [poiLayerId, radiusStr, unit, latStr, lngStr, poiIdStr] = parts;
+        if (parts.length < 7) continue;
+        const [poiLayerId, radiusStr, unit, latStr, lngStr, poiIdStr, confStr] = parts;
         if (!LAYER_DEFS[poiLayerId]) continue;
         const lat = parseFloat(latStr);
         const lng = parseFloat(lngStr);
@@ -348,6 +400,7 @@ async function tentRestoreFromPermalink(params) {
             selectedPOI: null,
             fetchedPOIs: [],
             layers: [],
+            confirmed: confStr === '1',
         });
         _tentRenderCards();
         await _tentFetchPOIs(id);
@@ -406,13 +459,19 @@ function _tentRenderCards() {
     <option value="">${t('matching_choose_layer') || 'Choose layer...'}</option>
     ${layerOpts}
   </select>
-  <button id="tent-pick-btn-${q.id}" class="tent-pick-btn" onclick="tentStartPick(${q.id})">
-    ${t('tent_location_btn')}
-  </button>
+  <div class="row" style="margin-bottom:6px">
+    <button id="tent-pick-btn-${q.id}" class="tent-pick-btn" style="flex:1" onclick="tentStartPick(${q.id})">
+      ${t('tent_location_btn')}
+    </button>
+    <button class="tent-pick-btn" style="flex:1" onclick="tentUseGeo(${q.id})" title="${t('rq_geo_title')}">🎯</button>
+  </div>
   <div id="tent-coord-${q.id}" class="tent-coord">${esc(coordTxt)}</div>
   <select id="tent-poi-select-${q.id}" onchange="tentSelectPOI(${q.id}, this.value)">
     ${poiOpts}
   </select>
+  <button class="tent-pick-btn ${q.confirmed ? 'active' : ''}" style="width:100%; margin-top:6px" onclick="tentConfirm(${q.id})">
+    ${q.confirmed ? 'Confirmed' : 'Confirm'}
+  </button>
 </div>`;
         })
         .join('');
