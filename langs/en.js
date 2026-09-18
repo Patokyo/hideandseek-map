@@ -249,4 +249,9 @@ const LANG_EN = {
     status_rq_conflict: 'Contradiction: the answers rule each other out',
     status_rq_no_geo: 'Location not active – enable the 🎯 button first',
     status_layer_empty: '{0}: no data found for this region',
+    MEASURING: 'Measuring',
+    MEASURING_HINT: '"Compared to me, are you closer to or further from this layer?"',
+    BTN_ADD_MEASURING: '+ Add measuring question',
+    BTN_CLEAR_MEASURING: 'Remove all measuring',
+    MEASURING_CARD_TITLE: 'Measuring Q{0}',
 };

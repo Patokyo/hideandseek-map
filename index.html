@@ -338,6 +338,32 @@
         </details>
       </div>
 
+      <!-- MEASURING -->
+      <div class="section" data-tool-section="true">
+        <details class="layers-details">
+          <summary class="section-title" data-i18n="MEASURING">MEASURING</summary>
+          <div style="font-size: 11px; color: #484f58; margin: 6px 0 8px" data-i18n="MEASURING_HINT">
+            "Compared to me, are you closer to or further from this layer?"
+          </div>
+          <div id="measCards"></div>
+          <button
+            style="width: 100%; margin-top: 4px"
+            onclick="addMeasuringQuestion()"
+            data-i18n="BTN_ADD_MEASURING"
+          >
+            + Add measuring question
+          </button>
+          <button
+            class="ghost"
+            style="width: 100%; margin-top: 6px"
+            onclick="clearAllMeasuringQuestions()"
+            data-i18n="BTN_CLEAR_MEASURING"
+          >
+            Remove all measuring
+          </button>
+        </details>
+      </div>
+
       <!-- Admin Division Checker -->
       <div class="section" data-tool-section="true">
         <details class="layers-details">
@@ -1154,6 +1180,7 @@
     <script src="js/tentacles.js"></script>
     <!-- tentacle Voronoi questions                   -->
     <script src="js/matching.js"></script>
+    <script src="js/measuring.js"></script>
     <script src="js/permalink.js"></script>
     <!-- URL state serialisation / restore           -->
     <script src="js/changelog.js"></script>

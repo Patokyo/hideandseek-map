@@ -243,4 +243,9 @@ const LANG_DE = {
     status_rq_conflict:   'Widerspruch: Die Antworten schließen sich gegenseitig aus',
     status_rq_no_geo:     'Standort nicht aktiv – erst den 🎯-Button einschalten',
     status_layer_empty:   '{0}: keine Daten für diese Region gefunden',
+    MEASURING:               'Messung',
+    MEASURING_HINT:          '„Im Vergleich zu mir, bist du näher an oder weiter weg von diesem Layer?“',
+    BTN_ADD_MEASURING:       '+ Messungs-Frage hinzufügen',
+    BTN_CLEAR_MEASURING:     'Alle Messungs-Fragen löschen',
+    MEASURING_CARD_TITLE:    'Messungs-Frage {0}',
 };
