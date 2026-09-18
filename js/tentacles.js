@@ -487,3 +487,4 @@ function _tentRenderCards() {
         })
         .join('');
 }
+

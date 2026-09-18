@@ -103,6 +103,7 @@ function clearAll() {
     clearAllBusRoutes();
     clearAllRadii();
     clearAllRadiusQuestions();
+    clearAllMatchingQuestions();
     clearAllLayers();
     clearAllBoundaryLayers();
     if (clickMarker) {
