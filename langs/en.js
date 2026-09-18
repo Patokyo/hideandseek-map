@@ -254,4 +254,9 @@ const LANG_EN = {
     BTN_ADD_MEASURING: '+ Add measuring question',
     BTN_CLEAR_MEASURING: 'Remove all measuring',
     MEASURING_CARD_TITLE: 'Measuring Q{0}',
+    THERMOMETER: 'Thermometer',
+    THERMOMETER_HINT: '"After traveling [distance], am I hotter or colder?"',
+    BTN_ADD_THERMOMETER: '+ Add thermometer question',
+    BTN_CLEAR_THERMOMETER: 'Remove all thermometer',
+    THERM_CARD_TITLE: 'Thermometer Q{0}',
 };

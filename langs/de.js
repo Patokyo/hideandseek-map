@@ -248,4 +248,9 @@ const LANG_DE = {
     BTN_ADD_MEASURING:       '+ Messungs-Frage hinzufügen',
     BTN_CLEAR_MEASURING:     'Alle Messungs-Fragen löschen',
     MEASURING_CARD_TITLE:    'Messungs-Frage {0}',
+    THERMOMETER:             'Thermometer',
+    THERMOMETER_HINT:        '„Nach einem Weg von [Distanz], bin ich heißer oder kälter?“',
+    BTN_ADD_THERMOMETER:     '+ Thermometer-Frage hinzufügen',
+    BTN_CLEAR_THERMOMETER:   'Alle Thermometer-Fragen löschen',
+    THERM_CARD_TITLE:        'Thermometer-Frage {0}',
 };
