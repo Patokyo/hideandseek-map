@@ -115,22 +115,9 @@ function _thermDrawGuide(id) {
     });
     q.layers = q.layers.filter(l => l instanceof L.Marker || l instanceof L.CircleMarker);
 
-    const center = L.latLng(q.lat, q.lng);
-
-    // Circle of radius d - made bolder
-    const circle = L.circle(center, {
-        radius: q.dist * 1000,
-        color: '#8b949e',
-        weight: 2,
-        dashArray: '8 4',
-        fill: false,
-        interactive: false,
-    }).addTo(map);
-    q.layers.push(circle);
-
     // Point A marker
     if (!q.markerA) {
-        q.markerA = L.circleMarker(center, {
+        q.markerA = L.circleMarker([q.lat, q.lng], {
             radius: 6,
             color: '#3b82f6',
             fillColor: '#3b82f6',
@@ -192,12 +179,11 @@ function _thermUpdateGuideElements(id) {
     const q = _thermQuestions.find((x) => x.id === id);
     if (!q || q.lat === null || q.latB === null) return;
 
+    // Clear existing guide layers (circles and polylines)
     q.layers = q.layers.filter(l => {
-        if (l instanceof L.Polyline && l !== q.markerA && l !== q.markerB) {
-            map.removeLayer(l);
-            return false;
-        }
-        if (l instanceof L.Circle && l !== q.markerA && l !== q.markerB) {
+        const isGuide = (l instanceof L.Polyline || l instanceof L.Circle) &&
+                        !(l instanceof L.Marker || l instanceof L.CircleMarker);
+        if (isGuide) {
             map.removeLayer(l);
             return false;
         }
@@ -215,19 +201,30 @@ function _thermUpdateGuideElements(id) {
     }).addTo(map);
     q.layers.push(circle);
 
-    // UNIFIED PLANAR MATH: Use simple lat/lng for BOTH line and mask
-    const midLat = (q.lat + q.latB) / 2;
-    const midLng = (q.lng + q.lngB) / 2;
-    const dx = q.lngB - q.lng;
-    const dy = q.latB - q.lat;
+    // Mirror logic from _thermDrawOcclusion exactly
+    const lngA = q.lng;
+    const latA = q.lat;
+    const lngB = q.lngB;
+    const latB = q.latB;
+
+    const midLng = (lngA + lngB) / 2;
+    const midLat = (latA + latB) / 2;
+
+    const dx = lngB - lngA;
+    const dy = latB - latA;
     const px = -dy;
     const py = dx;
-    const scale = 10;
 
-    const line = L.polyline([
-        [midLat - py * scale, midLng - px * scale],
-        [midLat + py * scale, midLng + px * scale]
-    ], {
+    const len = Math.sqrt(px * px + py * py);
+    const uPx = len !== 0 ? px / len : 0;
+    const uPy = len !== 0 ? py / len : 0;
+
+    const scale = 0.5; // Sufficient to cover game zone without projection artifacts
+
+    const p1 = [midLat + uPy * scale, midLng + uPx * scale];
+    const p2 = [midLat - uPy * scale, midLng - uPx * scale];
+
+    const line = L.polyline([p1, p2], {
         color: '#8b949e',
         weight: 2,
         dashArray: '4 4',
@@ -270,7 +267,7 @@ function _thermDrawOcclusion(id) {
 
     // Scale large enough to cover any reasonable game zone,
     // but not so large that it causes floating point issues.
-    const scale = 20;
+    const scale = 1000;
 
     // Create a huge rectangle that covers the B-side of the bisector.
     // Points are ordered to ensure a consistent counter-clockwise winding.
