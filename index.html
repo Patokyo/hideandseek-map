@@ -409,17 +409,38 @@
       <div class="section" data-tool-section="true">
         <details class="layers-details">
           <summary class="section-title">HIDER TOOLS</summary>
-          <div class="row" style="margin-bottom:8px">
-            <select id="hider-layer-select" style="width:100%" onchange="hiderCalculateNearest()">
-              <option value="">-- Select Layer --</option>
-            </select>
+
+          <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #30363d">
+            <div style="font-size: 12px; font-weight: bold; margin-bottom: 8px; color: #c9d1d9">CREATE HIDING ZONE</div>
+            <div class="row" style="margin-bottom:8px">
+              <select id="hider-poi-select" style="width:100%">
+                <option value="">-- Select Station --</option>
+              </select>
+            </div>
+            <div class="row" style="margin-top:6px; gap:6px; align-items:center">
+              <input type="number" id="hider-zone-radius" value="1" min="0.1" step="0.1" style="width:60px">
+              <span style="font-size:12px; color:#8b949e">km</span>
+              <button style="flex:1" onclick="hiderCreateZone()">Create Hiding Zone</button>
+            </div>
+            <div class="row" style="margin-top:8px">
+              <button class="ghost" style="width:100%" onclick="hiderClearZone()">Clear Hiding Zone</button>
+            </div>
           </div>
-          <div class="row" style="gap:6px; margin-bottom:8px">
-            <button class="tent-pick-btn" style="flex:1" onclick="hiderStartPick()">Pick Location</button>
-            <button class="tent-pick-btn" style="flex:1" onclick="hiderUseGeo()">Current Loc</button>
-          </div>
-          <div id="hider-result" style="font-size:12px; padding:8px; background:#0d1117; border-radius:4px; border:1px solid #30363d; min-height:32px">
-            Select layer and location
+
+          <div style="margin-bottom: 8px">
+            <div style="font-size: 12px; font-weight: bold; margin-bottom: 8px; color: #c9d1d9">CHECK NEAREST POI</div>
+            <div class="row" style="margin-bottom:8px">
+              <select id="hider-layer-select" style="width:100%" onchange="hiderCalculateNearest()">
+                <option value="">-- Select Layer --</option>
+              </select>
+            </div>
+            <div class="row" style="gap:6px; margin-bottom:8px">
+              <button class="tent-pick-btn" style="flex:1" onclick="hiderStartPick()">Pick Location</button>
+              <button class="tent-pick-btn" style="flex:1" onclick="hiderUseGeo()">Current Loc</button>
+            </div>
+            <div id="hider-result" style="font-size:12px; padding:8px; background:#0d1117; border-radius:4px; border:1px solid #30363d; min-height:32px">
+              Select layer and location
+            </div>
           </div>
         </details>
       </div>
