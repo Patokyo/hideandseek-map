@@ -306,6 +306,27 @@ function _thermDrawOcclusion(id) {
 
 // ── Public API ────────────────────────────────────────────────────────────────
 
+function thermConfirm(id) {
+    const q = _thermQuestions.find((x) => x.id === id);
+    if (!q) return;
+
+    // Remove markers
+    if (q.markerA) map.removeLayer(q.markerA);
+    if (q.markerB) map.removeLayer(q.markerB);
+
+    // Remove guide circles and lines
+    q.layers.forEach((l) => map.removeLayer(l));
+    q.layers = [];
+
+    // Mark as confirmed to hide editing controls in render
+    q.confirmed = true;
+
+    _thermRenderCards();
+    setStatus(`Thermometer ${id} confirmed`, 'ok');
+}
+
+// ── Public API ────────────────────────────────────────────────────────────────
+
 function addThermometerQuestion() {
     const id = _thermNextId++;
     _thermQuestions.push({
@@ -454,6 +475,18 @@ function _thermRenderCards() {
 
     el.innerHTML = _thermQuestions
         .map((q, i) => {
+            if (q.confirmed) {
+                return `<div class="tent-card" id="therm-${q.id}" style="opacity:0.8; background:#161b22">
+                    <div class="tent-card-hdr">
+                        <span class="tent-card-title">${tf('THERM_CARD_TITLE', i + 1)} (Confirmed)</span>
+                        <button class="ghost tent-card-del" onclick="removeThermometerQuestion(${q.id})" title="Remove">✕</button>
+                    </div>
+                    <div style="padding: 8px; font-size: 11px; color: #8b949e; text-align: center">
+                        Zone active. Use "Remove" to edit or delete.
+                    </div>
+                </div>`;
+            }
+
             const coordA = q.lat !== null ? `${q.lat.toFixed(5)}° N  ${q.lng.toFixed(5)}° E` : t('matching_pick');
             const coordB = q.latB !== null ? `${q.latB.toFixed(5)}° N  ${q.lngB.toFixed(5)}° E` : '– pick point B –';
 
@@ -461,7 +494,10 @@ function _thermRenderCards() {
 <div class="tent-card" id="therm-${q.id}">
   <div class="tent-card-hdr">
     <span class="tent-card-title">${tf('THERM_CARD_TITLE', i + 1)}</span>
-    <button class="ghost tent-card-del" onclick="removeThermometerQuestion(${q.id})" title="Remove">✕</button>
+    <div style="display:flex; gap:4px">
+        <button class="ghost tent-card-del" onclick="removeThermometerQuestion(${q.id})" title="Remove">✕</button>
+        <button class="ghost" style="font-size:10px; padding: 2px 4px" onclick="thermConfirm(${q.id})">Confirm</button>
+    </div>
   </div>
   <div class="row" style="margin-bottom:6px">
     <input type="number" value="${q.dist}" min="0.1" step="0.1" style="max-width:70px"
