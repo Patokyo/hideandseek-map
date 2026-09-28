@@ -459,13 +459,12 @@ function _tentRenderCards() {
     <option value="">${t('matching_choose_layer') || 'Choose layer...'}</option>
     ${layerOpts}
   </select>
-  <div class="row" style="margin-bottom:6px">
-    <button id="tent-pick-btn-${q.id}" class="tent-pick-btn" style="flex:1" onclick="tentStartPick(${q.id})">
-      ${t('tent_location_btn')}
-    </button>
-    <button class="tent-pick-btn" style="flex:1" onclick="tentUseGeo(${q.id})" title="${t('rq_geo_title')}">🎯</button>
-  </div>
-  <div id="tent-coord-${q.id}" class="tent-coord">${esc(coordTxt)}</div>
+    <div class="row" style="margin-bottom:6px">
+        <button id="tent-pick-btn-${q.id}" class="tent-pick-btn" style="flex:1" onclick="tentStartPick(${q.id})">
+            ${t('tent_location_btn')}
+        </button>
+        <button class="tent-pick-btn" style="flex:1" onclick="tentUseGeo(${q.id})" title="${t('rq_geo_title')}">🎯</button>
+    </div>
   <select id="tent-poi-select-${q.id}" onchange="tentSelectPOI(${q.id}, this.value)">
     ${poiOpts}
   </select>
