@@ -1,9 +1,11 @@
 # Jet Lag Maps – Hide & Seek
 
+> A fork of Cniehaus's Jet Lag Maps - reworked ui and user flow, cleaning up user experience.
+
 > An interactive map tool for the board game [Jet Lag: The Game – Hide & Seek](https://store.nebula.tv/collections/jetlag/products/hideandseek).
 > Plan your game with live OpenStreetMap data: city boundaries, postal codes, hospitals, train stations, bus lines, and much more – fully printable as A4 PDF. Includes a colour-blind safe palette.
 
-**[▶ Open the live app](https://cniehaus.github.io/hideandseek-map/)**
+**[▶ Open the live app](https://patokyo.github.io/hideandseek-map/)**
 
 ![Preview](og-preview.png)
 
