@@ -597,6 +597,24 @@ input[type='number'] {
     min-width: 0;
 }
 
+/* Make the City input text explicitly white for readability */
+#cityInput {
+    color: #ffffff !important;
+    background: #0d1117 !important;
+}
+
+/* Stronger overrides for placeholder and browser autofill */
+#cityInput::placeholder {
+    color: rgba(255,255,255,0.7) !important;
+}
+input#cityInput:-webkit-autofill,
+input#cityInput:-webkit-autofill::first-line {
+    -webkit-text-fill-color: #ffffff !important;
+}
+input#cityInput {
+    -webkit-text-fill-color: #ffffff !important;
+}
+
 /* ----------------------------
    Tentacles: Force white text
    ---------------------------- */
@@ -1109,6 +1127,10 @@ button.meas-active:hover {
 #layerFab {
     bottom: 138px;
 }
+#/***** Layer FAB text color override to ensure white text *****/
+#layerFab {
+    color: #ffffff;
+}
 /* Keep permalink/export offsets if they reappear */
 #permalinkFab {
     bottom: 192px;
@@ -1174,6 +1196,29 @@ button.meas-active:hover {
 }
 #layerPanel.open {
     display: flex;
+}
+
+/* Ensure layer panel text is readable on dark background */
+#layerPanel {
+    color: #ffffff;
+}
+#layerPanel .layer-name {
+    color: #ffffff;
+}
+#layerPanel .layer-count {
+    color: rgba(255,255,255,0.7);
+}
+
+/* Stronger override in case other rules take precedence */
+#layerPanel .layer-row .layer-name {
+    color: #ffffff !important;
+}
+#layerPanel .layer-row .layer-count {
+    color: rgba(255,255,255,0.85) !important;
+}
+#layerPanel {
+    background: #161b22 !important;
+    color: #ffffff !important;
 }
 
 .lp-header {

@@ -8,7 +8,7 @@ function updateSetupMode() {
     const setupBtn = document.getElementById('setupMenuBtn');
     if (setupBtn) {
         setupBtn.classList.toggle('active', inSetup);
-        setupBtn.textContent = 'Setup Map';
+        setupBtn.textContent = inSetup ? 'Start Game' : 'Setup Map';
     }
 }
 
@@ -30,6 +30,23 @@ function toggleSetupMode() {
     if (mapSetupComplete) {
         mapSetupComplete = false;
         updateSetupMode();
+        // Re-show any cached POI layers on the map so the user can edit/setup them
+        Object.keys(layerDataCache).forEach((id) => {
+            try {
+                if (activeLayers[id]) return;
+                const data = layerDataCache[id];
+                if (!data) return;
+                const def = LAYER_DEFS[id];
+                if (!def || typeof def.render !== 'function') return;
+                const leafletLayers = def.render(id, data, def);
+                activeLayers[id] = leafletLayers;
+                leafletLayers.forEach((l) => l.addTo(map));
+            } catch (e) {
+                console.error('Error restoring cached layer', id, e);
+            }
+        });
+        renderSetupPoiLayerList();
+        updateLayerFabBadge();
         openSidebar();
     } else {
         completeMapSetup();
