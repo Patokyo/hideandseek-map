@@ -117,14 +117,19 @@ function _rqDrawQuestion(q) {
         interactive: false,
     }).addTo(map);
     const label = makeKmLabel(center, q.km, color).addTo(map);
+    // mark the label so we can remove it on confirm while keeping the circle
+    try { label._isRadiusLabel = true; } catch (e) {}
 
-    const handle = makeDragHandle(center, color);
-    handle.on('drag', (e) => {
+    // Only create a draggable handle when the question is not confirmed
+    let handle = null;
+    if (!q.confirmed) {
+        handle = makeDragHandle(center, color);
+        handle.on('drag', (e) => {
         const c = e.target.getLatLng();
         circle.setLatLng(c);
         label.setLatLng(radiusLabelPos(c, q.km));
     });
-    handle.on('dragend', (e) => {
+        handle.on('dragend', (e) => {
         const c = e.target.getLatLng();
         q.lat = c.lat;
         q.lng = c.lng;
@@ -133,12 +138,24 @@ function _rqDrawQuestion(q) {
         updatePermalink();
     });
 
-    q.layers = [circle, label, handle];
+        q.handle = handle;
+    } else {
+        q.handle = null;
+    }
+
+    // Track circle and label as persistent layers; handle is tracked separately
+    q.layers = [circle, label];
 }
 
 function _rqClearLayers(q) {
-    q.layers.forEach((l) => map.removeLayer(l));
-    q.layers = [];
+    if (Array.isArray(q.layers)) {
+        q.layers.forEach((l) => map.removeLayer(l));
+        q.layers = [];
+    }
+    if (q.handle) {
+        try { map.removeLayer(q.handle); } catch (e) {}
+        q.handle = null;
+    }
 }
 
 // ── Map click hook for picking the question spot ──────────────────────────────
@@ -147,6 +164,10 @@ addMapClickHook((e) => {
     const q = _rqQuestions.find((x) => x.id === _rqPickingId);
     _rqPickingId = null;
     if (!q) return false;
+    if (q.confirmed) {
+        setStatus(t('status_locked') || 'Question is confirmed', 'error');
+        return false;
+    }
     _rqSetCenter(q, e.latlng.lat, e.latlng.lng);
     return true;
 });
@@ -162,14 +183,20 @@ function _rqSetCenter(q, lat, lng) {
 
 // ── Public API (sidebar) ──────────────────────────────────────────────────────
 function addRadiusQuestion() {
-    _rqQuestions.push({ id: _rqNextId++, km: 1, answer: null, lat: null, lng: null, layers: [] });
+    _rqQuestions.push({ id: _rqNextId++, km: 1, answer: null, lat: null, lng: null, layers: [], confirmed: false, handle: null });
     _rqRenderCards();
 }
 
 function removeRadiusQuestion(id) {
     const idx = _rqQuestions.findIndex((x) => x.id === id);
     if (idx === -1) return;
-    _rqClearLayers(_rqQuestions[idx]);
+    // remove any handle too
+    const q = _rqQuestions[idx];
+    if (q.handle) {
+        try { map.removeLayer(q.handle); } catch (e) {}
+        q.handle = null;
+    }
+    _rqClearLayers(q);
     _rqQuestions.splice(idx, 1);
     _rqRenderCards();
     _rqUpdateOverlay();
@@ -198,11 +225,37 @@ function rqSetRadius(id, val) {
 function rqSetAnswer(id, answer) {
     const q = _rqQuestions.find((x) => x.id === id);
     if (!q) return;
+    if (q.confirmed) return;
     q.answer = answer;
     _rqRenderCards();
     _rqDrawQuestion(q);
     _rqUpdateOverlay();
     updatePermalink();
+}
+
+function rqConfirm(id) {
+    const q = _rqQuestions.find((x) => x.id === id);
+    if (!q) return;
+
+    // Remove draggable handle if present
+    if (q.handle) {
+        try { map.removeLayer(q.handle); } catch (e) {}
+        q.handle = null;
+    }
+    // Remove any radius label but keep the circle so occlusion remains
+    if (Array.isArray(q.layers) && q.layers.length) {
+        q.layers = q.layers.filter((l) => {
+            if (l && l._isRadiusLabel) {
+                try { map.removeLayer(l); } catch (e) {}
+                return false;
+            }
+            return true;
+        });
+    }
+    q.confirmed = true;
+    _rqRenderCards();
+    _rqUpdateOverlay();
+    setStatus(`Radius ${id} confirmed`, 'ok');
 }
 
 function rqStartPick(id) {
@@ -217,6 +270,7 @@ function rqStartPick(id) {
 function rqUseGeo(id) {
     const q = _rqQuestions.find((x) => x.id === id);
     if (!q) return;
+    if (q.confirmed) return setStatus(t('status_locked') || 'Question is confirmed', 'error');
     if (!geoMarker) {
         setStatus(t('status_rq_no_geo'), 'error');
         return;
@@ -264,6 +318,14 @@ function _rqRenderCards() {
 
     el.innerHTML = _rqQuestions
         .map((q, i) => {
+            if (q.confirmed) {
+                return `<div class="tent-card" id="rq-${q.id}" style="opacity:0.8; background:#161b22">
+  <div class="tent-card-hdr">
+    <span class="tent-card-title">${tf('rq_card_title', i + 1)} (Confirmed)</span>
+    <button class="ghost tent-card-del" onclick="removeRadiusQuestion(${q.id})" title="Remove">✕</button>
+  </div>
+</div>`;
+            }
             const coordTxt =
                 q.lat !== null
                     ? `${q.lat.toFixed(5)}° N  ${q.lng.toFixed(5)}° E`
@@ -271,18 +333,22 @@ function _rqRenderCards() {
             const radiusVal = fromKm(q.km);
             return `
 <div class="tent-card" id="rq-${q.id}">
-  <div class="tent-card-hdr">
-    <span class="tent-card-title">${tf('rq_card_title', i + 1)}</span>
-    <button class="ghost tent-card-del" onclick="removeRadiusQuestion(${q.id})" title="Remove">✕</button>
-  </div>
+    <div class="tent-card-hdr">
+        <span class="tent-card-title">${tf('rq_card_title', i + 1)}</span>
+        <div style="display:flex; gap:4px">
+                <button class="ghost tent-card-del" onclick="removeRadiusQuestion(${q.id})" title="Remove">✕</button>
+                ${q.confirmed ? `<button class="ghost" style="font-size:10px; padding: 2px 4px" disabled>Confirmed</button>` : `<button class="ghost" style="font-size:10px; padding: 2px 4px" onclick="rqConfirm(${q.id})">Confirm</button>`}
+        </div>
+    </div>
   <div class="row" style="align-items:center;margin-bottom:6px">
     <input type="number" value="${q.km % 1 === 0 ? radiusVal : radiusVal.toFixed(2)}" min="0.05" step="0.05" style="max-width:80px"
       onchange="rqSetRadius(${q.id}, this.value)">
     <span style="color:#8b949e;font-size:12px">${tf('lbl_radius', unitStr())}</span>
   </div>
   <div class="row" style="margin-bottom:6px">
-    <button id="rq-pick-btn-${q.id}" class="tent-pick-btn" style="margin-bottom:0" onclick="rqStartPick(${q.id})">${t('rq_pick_btn')}</button>
-    <button class="tent-pick-btn" style="margin-bottom:0" onclick="rqUseGeo(${q.id})" title="${t('rq_geo_title')}">🎯</button>
+        <button id="rq-pick-btn-${q.id}" class="tent-pick-btn" style="margin-bottom:0" onclick="rqStartPick(${q.id})">${t('rq_pick_btn')}</button>
+        <button class="tent-pick-btn" style="margin-bottom:0" onclick="rqUseGeo(${q.id})" title="${t('rq_geo_title')}">🎯</button>
+        
   </div>
   <div class="row" style="margin-bottom:6px">
     <button class="rq-ans rq-ans-yes${q.answer === 'yes' ? ' active' : ''}" onclick="rqSetAnswer(${q.id},'yes')">${t('rq_yes')}</button>
