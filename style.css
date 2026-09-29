@@ -83,9 +83,9 @@ body.setup-mode [data-setup-only] {
 body:not(.setup-mode) [data-setup-only] {
     display: none !important;
 }
-body:not(.setup-mode) #styleFab,
-body:not(.setup-mode) #printFab,
-body:not(.setup-mode) #importStateFab,
+/* Hide locate, boundary and layer FABs during setup mode; show in play mode */
+body.setup-mode #locateFab,
+body.setup-mode #boundaryFab,
 body.setup-mode #layerFab,
 body.setup-mode #layerPanel {
     display: none !important;
@@ -1069,10 +1069,8 @@ button.meas-active:hover {
 }
 
 /* ── FABs (floating action buttons) ──────────────── */
-#printFab,
 #exportStateFab,
 #importStateFab,
-#styleFab,
 #boundaryFab,
 #permalinkFab,
 #layerFab,
@@ -1095,29 +1093,25 @@ button.meas-active:hover {
     justify-content: center;
     overflow: visible;
 }
-#printFab {
+#exportStateFab {
     bottom: 30px;
 }
-#exportStateFab {
+#importStateFab {
     bottom: 84px;
 }
-#importStateFab {
-    bottom: 138px;
-}
-#styleFab {
-    bottom: 192px;
+/* Desired play-mode ordering (from bottom upward): locate, boundary, layer */
+#locateFab {
+    bottom: 30px;
 }
 #boundaryFab {
-    bottom: 246px;
-}
-#permalinkFab {
-    bottom: 300px;
+    bottom: 84px;
 }
 #layerFab {
-    bottom: 354px;
+    bottom: 138px;
 }
-#locateFab {
-    bottom: 408px;
+/* Keep permalink/export offsets if they reappear */
+#permalinkFab {
+    bottom: 192px;
 }
 #printFab:hover,
 #exportStateFab:hover,

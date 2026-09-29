@@ -122,8 +122,8 @@ function clearAll() {
 function positionStylePopover(trigger) {
     const pop = document.getElementById('stylePopover');
     if (!pop) return;
-
-    const triggerEl = trigger instanceof HTMLElement ? trigger : document.getElementById('styleFab');
+    const defaultTrigger = document.getElementById('styleFab') || document.getElementById('setupStyleBtn');
+    const triggerEl = trigger instanceof HTMLElement ? trigger : defaultTrigger;
     const pad = 12;
 
     if (triggerEl) {
@@ -151,7 +151,7 @@ function positionStylePopover(trigger) {
     }
 }
 
-function toggleStylePopover(trigger = document.getElementById('styleFab')) {
+function toggleStylePopover(trigger = document.getElementById('styleFab') || document.getElementById('setupStyleBtn')) {
     const pop = document.getElementById('stylePopover');
     if (!pop) return;
 
