@@ -17,7 +17,7 @@ addMapClickHook((e) => {
     _tentPickingId = null;
     const q = _tentQuestions.find((x) => x.id === id);
     if (!q) return false;
-
+    if (q.confirmed) return setStatus(t('status_locked') || 'Question is confirmed', 'error');
     q.centerLat = e.latlng.lat;
     q.centerLng = e.latlng.lng;
 
@@ -27,6 +27,8 @@ addMapClickHook((e) => {
     document.getElementById(`tent-pick-btn-${id}`)?.classList.remove('meas-active');
     setStatus('', '');
     _tentFetchPOIs(id);
+    // create draggable marker immediately so user can fine-tune
+    _tentCreateDraggableMarker(q, id);
     return true;
 });
 
@@ -107,6 +109,38 @@ async function _tentFetchPOIs(id) {
         showErrorPopup(err.message);
         setStatus('Error processing POIs', 'error');
     }
+}
+
+// Update the coordinate label in the tentacle card
+function updateTentCoordLabel(id, latlng) {
+    const el = document.querySelector('#tent-' + id + ' .tent-coord');
+    if (el) el.textContent = `${latlng.lat.toFixed(5)}° N  ${latlng.lng.toFixed(5)}° E`;
+}
+
+// Create a draggable marker for a tentacle question (or replace existing)
+function _tentCreateDraggableMarker(q, id) {
+    if (!q) return;
+    if (q.marker) {
+        try { map.removeLayer(q.marker); } catch (e) {}
+        q.marker = null;
+    }
+    q.marker = L.marker([q.centerLat, q.centerLng], {
+        draggable: true,
+        icon: L.divIcon({ className: 'tent-marker', html: '<div style="width:10px;height:10px;border-radius:50%;background:#3b82f6;border:2px solid #fff"></div>', iconSize: [10,10], iconAnchor: [5,5] }),
+        zIndexOffset: 500,
+    }).addTo(map);
+    q.marker.on('drag', (e) => {
+        const p = e.target.getLatLng();
+        updateTentCoordLabel(id, p);
+    });
+    q.marker.on('dragend', (e) => {
+        const p = e.target.getLatLng();
+        q.centerLat = p.lat;
+        q.centerLng = p.lng;
+        _tentDraw(id);
+        _tentFetchPOIs(id);
+        updatePermalink();
+    });
 }
 
 // ── Geodesically-correct Voronoi via equirectangular projection ───────────────
@@ -248,6 +282,10 @@ async function _tentDraw(id) {
 function _tentClearLayers(q) {
     q.layers.forEach((l) => map.removeLayer(l));
     q.layers = [];
+    if (q.marker) {
+        try { map.removeLayer(q.marker); } catch (e) {}
+        q.marker = null;
+    }
 }
 
 // ── Public API ────────────────────────────────────────────────────────────────
@@ -264,6 +302,7 @@ function addTentacleQuestion() {
         selectedPOI: null,
         fetchedPOIs: [],
         layers: [],
+        marker: null,
         confirmed: false,
     });
     _tentRenderCards();
@@ -318,6 +357,11 @@ function tentConfirm(id) {
     const q = _tentQuestions.find((x) => x.id === id);
     if (!q) return;
     q.confirmed = !q.confirmed;
+    // when confirming, remove draggable marker so only overlay remains
+    if (q.confirmed && q.marker) {
+        try { map.removeLayer(q.marker); } catch (e) {}
+        q.marker = null;
+    }
     _tentDraw(id);
     _tentRenderCards();
     updatePermalink();
@@ -436,41 +480,50 @@ function _tentRenderCards() {
                       .join('')
                 : `<option value="">${t('tent_select_poi')}</option>`;
 
-            const coordTxt =
-                q.centerLat !== null
-                    ? `${q.centerLat.toFixed(5)}° N  ${q.centerLng.toFixed(5)}° E`
-                    : t('tent_set_center');
+                        const coordTxt =
+                                q.centerLat !== null
+                                        ? `${q.centerLat.toFixed(5)}° N  ${q.centerLng.toFixed(5)}° E`
+                                        : t('tent_set_center');
 
-            return `
-<div class="tent-card" id="tent-${q.id}">
-  <div class="tent-card-hdr">
-    <span class="tent-card-title">${tf('tent_card_title', i + 1)}</span>
-    <button class="ghost tent-card-del" onclick="removeTentacleQuestion(${q.id})" title="Remove">✕</button>
-  </div>
-  <div class="row" style="margin-bottom:6px">
-    <input type="number" value="${q.radius}" min="1" max="9999" step="1" style="max-width:70px"
-      onchange="tentSetRadius(${q.id}, this.value)">
-    <select style="flex:1" onchange="tentSetUnit(${q.id}, this.value)">
-      <option value="km"${q.unit === 'km' ? ' selected' : ''}>${t('tent_kilometers')}</option>
-      <option value="mi"${q.unit === 'mi' ? ' selected' : ''}>${t('tent_miles')}</option>
-    </select>
-  </div>
-  <select style="margin-bottom:6px" onchange="tentSetLayer(${q.id}, this.value)">
-    <option value="">${t('matching_choose_layer') || 'Choose layer...'}</option>
-    ${layerOpts}
-  </select>
-    <div class="row" style="margin-bottom:6px">
-        <button id="tent-pick-btn-${q.id}" class="tent-pick-btn" style="flex:1" onclick="tentStartPick(${q.id})">
-            ${t('tent_location_btn')}
-        </button>
-        <button class="tent-pick-btn" style="flex:1" onclick="tentUseGeo(${q.id})" title="${t('rq_geo_title')}">🎯</button>
+                        if (q.confirmed) {
+                                return `<div class="tent-card" id="tent-${q.id}" style="opacity:0.8; background:#161b22">
+    <div class="tent-card-hdr">
+        <span class="tent-card-title">${tf('tent_card_title', i + 1)}</span>
+        <button class="ghost tent-card-del" onclick="removeTentacleQuestion(${q.id})" title="Remove">✕</button>
     </div>
-  <select id="tent-poi-select-${q.id}" onchange="tentSelectPOI(${q.id}, this.value)">
-    ${poiOpts}
-  </select>
-  <button class="tent-pick-btn ${q.confirmed ? 'active' : ''}" style="width:100%; margin-top:6px" onclick="tentConfirm(${q.id})">
-    ${q.confirmed ? 'Confirmed' : 'Confirm'}
-  </button>
+</div>`;
+                        }
+
+                        return `
+<div class="tent-card" id="tent-${q.id}">
+        <div class="tent-card-hdr">
+                <span class="tent-card-title">${tf('tent_card_title', i + 1)}</span>
+                <div style="display:flex; gap:4px">
+                                <button class="ghost tent-card-del" onclick="removeTentacleQuestion(${q.id})" title="Remove">✕</button>
+                                <button class="ghost" style="font-size:10px; padding:2px 4px" onclick="tentConfirm(${q.id})">Confirm</button>
+                </div>
+        </div>
+    <div class="row" style="margin-bottom:6px">
+        <input type="number" value="${q.radius}" min="1" max="9999" step="1" style="max-width:70px"
+            onchange="tentSetRadius(${q.id}, this.value)">
+        <select style="flex:1" onchange="tentSetUnit(${q.id}, this.value)">
+            <option value="km"${q.unit === 'km' ? ' selected' : ''}>${t('tent_kilometers')}</option>
+            <option value="mi"${q.unit === 'mi' ? ' selected' : ''}>${t('tent_miles')}</option>
+        </select>
+    </div>
+    <select style="margin-bottom:6px" onchange="tentSetLayer(${q.id}, this.value)">
+        <option value="">${t('matching_choose_layer') || 'Choose layer...'}</option>
+        ${layerOpts}
+    </select>
+        <div class="row" style="margin-bottom:6px">
+                <button id="tent-pick-btn-${q.id}" class="tent-pick-btn" style="flex:1" onclick="tentStartPick(${q.id})">
+                        ${t('tent_location_btn')}
+                </button>
+                <button class="tent-pick-btn" style="flex:1" onclick="tentUseGeo(${q.id})" title="${t('rq_geo_title')}">🎯</button>
+        </div>
+        <select id="tent-poi-select-${q.id}" onchange="tentSelectPOI(${q.id}, this.value)">
+                ${poiOpts}
+        </select>
 </div>`;
         })
         .join('');
