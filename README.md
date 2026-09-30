@@ -1,9 +1,9 @@
-# Jet Lag Maps – Hide & Seek
+# Interactive tools for Jet Lag – Hide & Seek
 
 > A fork of Cniehaus's Jet Lag Maps - reworked ui and user flow, cleaning up user experience.
 
-> An interactive map tool for the board game [Jet Lag: The Game – Hide & Seek](https://store.nebula.tv/collections/jetlag/products/hideandseek).
-> Plan your game with live OpenStreetMap data: city boundaries, postal codes, hospitals, train stations, bus lines, and much more – fully printable as A4 PDF. Includes a colour-blind safe palette.
+> An interactive map tool for the game [Jet Lag: The Game – Hide & Seek](https://store.nebula.tv/collections/jetlag/products/hideandseek).
+> Plan your game with live OpenStreetMap data: city boundaries, postal codes, hospitals, train stations, bus lines, and much more – fully printable as A4 PDF.
 
 **[▶ Open the live app](https://patokyo.github.io/hideandseek-map/)**
 
@@ -11,94 +11,47 @@
 
 ---
 
-## Features
+# Features
 
-### Map layers
+## Map Setup and planning
 
-**22 toggleable layers** across three categories:
+Use setup map mode to plan the game area, decide allowed transit routes (train/tram lines, bus routes) and prepare and cache POI layers!
+Once setup, the map can be exported to a JSON file that can be used to load the map without making unnecessary API calls!
 
-| Category          | Layers                                                                       |
-| ----------------- | ---------------------------------------------------------------------------- |
-| City overview     | City boundary, Postal codes                                                  |
-| Transport         | Train & tram stations, Bus stops                                             |
-| Emergency & civic | Hospitals, Police stations, Fire stations, Town halls, Embassies, Consulates |
-| Culture & leisure | Attractions, Cinemas, Zoos, Aquariums, Libraries, Golf courses, Stadiums     |
-| Nature & amenity  | Parks, Water bodies, Cemeteries, Swimming pools                              |
-| Commerce          | Shopping centres                                                             |
+## Seeker tools
 
-Clicking any **bus stop** shows a popup listing every bus line that serves it – fetched live from OpenStreetMap:
+Tools that the group of seekers can use to narrow down where the hiders are.
 
-![Bus stop popup showing lines 301, 303, 304, 340](screenshot-buslines.png)
+### Matching
 
-### City boundary layer
+Choose a cached POI layer and a location - If the hider shares the same closest POI in that layer, or is closer to a different POI, automatically blocks out sections of the map the hider cannot be.
 
-Toggle the **City Boundary** layer to draw the administrative outline of the searched city as a thick dashed line with no fill. Useful for quickly checking whether the hider is still inside the game area. The boundary is fetched using the exact OSM relation ID returned by Nominatim, so it matches the city precisely.
+### Measuring
 
-### Transit route lines
+Choose a cached POI layer and a location - Depending on whether the hider is closer to or further from a POI in that layer than the seekers, blocks out sections of the map they cannot be in.
 
-Draw any transit line by number directly on the map. Type a line number such as **305** in the transit route section – the full route appears as a coloured line. Multiple lines can be shown at once, each with its own colour.
+### Thermometer
 
-### Radius & interval tool
+Choose a location on the map, then use the guide circle to choose a second point exactly X distance away. After travelling X distance, depending on whether you are now closer to or further from the hider,
+blocks out the section of the map they cannot be.
 
-Draw a circle of any radius around a chosen centre point – or a set of evenly-spaced rings for interval-based rules.
+### Radar
 
-**Radii are draggable** – grab the centre dot and move the whole circle to a new position without redrawing it.
+Choose a location and a radius, depending on whether the hider is in that zone, blocks out sections of the map they cannot be.
 
-### Administrative division checker
+### Tentacles
 
-Click two points (A then B) to compare their administrative hierarchy across four game-relevant levels:
+Choose a location and a cached POI layer, then choose which POI the hider is closest to within that radius. Blocks out sections of the map the hider cannot be.
 
-| Level            | Fields checked                                    |
-| ---------------- | ------------------------------------------------- |
-| 1. Neighbourhood | neighbourhood, suburb, quarter, hamlet            |
-| 2. City          | city\_district, city, town, village, municipality |
-| 3. County        | county, district, state\_district                 |
-| 4. State         | state, province, region                           |
+## Hider tools
 
-Each level is marked **✓** (same division), **✗** (different), or **–** (not applicable). Both points are reverse-geocoded via Nominatim, and the map highlights:
+### Hiding zone
 
-- The **neighbourhood polygon** for each point (orange for A, blue for B)
-- Background outlines at city, county, and state level
+Creates radius around station the hider chooses.
 
-### Tentacle questions
+### Check nearest POI
 
-The _Questions_ panel lets you define **Tentacle** questions – the canonical Hide & Seek mechanic where a player is asked "are you in the Voronoi cell of POI X?"
-
-Set a radius, choose a POI type (hospitals, museums, train stations, …), click the 📍 button to place the centre point on the map, then pick the specific POI from the dropdown. The map shows:
-
-- The **filled polygon** = every location that is closer to the chosen POI than to any other POI of the same type within the radius
-- **Dashed outlines** = all other cells in the diagram (so players can see where the boundaries lie)
-
-Multiple questions can be open at the same time.
-
-![Tentacle question showing Voronoi cells around Oldenburg](screenshot-tentacles.png)
-
-### Distance & direction tool
-
-Click two points (A then B) to get the Haversine distance and compass bearing. The result is shown with two semicircle zones.
-
-**Both markers are draggable** – move A or B after placing them; distance, bearing, and zones update in real time.
-
-### Click-point marker
-
-Every map click sets a centre point for the radius tool and marks it with a crosshair symbol so you always know where the last click landed.
-
-### Colour-blind safe palette
-
-The map style popover (🗺 button) now includes a **Colour palette** toggle with two options:
-
-- **Default** – the original vivid colours
-- **Colour-blind safe** – based on the [Okabe-Ito](https://jfly.uni-koeln.de/color/) and [Paul Tol](https://personal.sron.nl/~pault/) palettes, designed to be distinguishable under deuteranopia and protanopia (red-green colour blindness). Replaces pure red/green pairs with vermillion/teal equivalents throughout all layers, postal-code zones, interval rings, and bus route lines.
-
-The choice is persisted in `localStorage` and switching palettes instantly re-colours any active layers without re-fetching data.
-
-### Map styles & printing
-
-6 map styles (OSM Standard, Positron, Dark, Voyager, Satellite, ÖPNV). Print-ready A4 PDF via the browser print dialog.
-
-### Bilingual
-
-English and German, auto-detected from browser locale. Switch at any time with the DE / EN buttons.
+Helpful for answering matching and measuring questions. Choose a cached POI layer and your location and displays the closest POI of that layer and how far away it is.
 
 ---
 
