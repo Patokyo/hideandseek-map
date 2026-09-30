@@ -7,7 +7,7 @@
 
 **[▶ Open the live app](https://patokyo.github.io/hideandseek-map/)**
 
-![Preview](og-preview.png)
+![Preview](preview.png)
 
 ---
 
