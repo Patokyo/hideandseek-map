@@ -5,7 +5,7 @@
 > An interactive map tool for the game [Jet Lag: The Game – Hide & Seek](https://store.nebula.tv/collections/jetlag/products/hideandseek).
 > Plan your game with live OpenStreetMap data: city boundaries, postal codes, hospitals, train stations, bus lines, and much more – fully printable as A4 PDF.
 
-**[▶ Open the live app](https://patokyo.github.io/hideandseek-map/)**
+**[▶ Open the live app](https://patokyo.github.io/jetlagtools-hideandseek/)**
 
 ![Preview](preview.png)
 
